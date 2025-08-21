@@ -242,6 +242,12 @@ mediatek_setup_interfaces()
 	mediatek,mt7987*)
 		ucidef_set_interfaces_lan_wan "eth1" eth0
 		;;
+	ruijie,rg-be72-pro|\
+	ruijie,rg-be72-pro-mod)
+		ucidef_set_interfaces_lan_wan "lan1 lan2 lan3 lan4 eth2.2 eth1" eth2.1
+		ucidef_add_switch "switch0" \
+					"0@eth2" "1:wan" "2:lan" "3:lan" "4:lan"
+		;;
 	mediatek,mt7988*)
 		local sys_switch=$(mediatek_get_switch_type)
 		local sys_mt7531_p5=$(mediatek_check_mt7531_P5)
@@ -340,6 +346,12 @@ mediatek_setup_macs()
 		label_mac=$(mtd_get_mac_ascii product_info ethaddr)
 		wan_mac=$label_mac
 		lan_mac=$(macaddr_add "$label_mac" 1)
+		;;
+	ruijie,rg-be72-pro|\
+	ruijie,rg-be72-pro-mod)
+		label_mac=$(mtd_get_mac_ascii product_info ethaddr)
+		lan_mac=$label_mac
+		wan_mac=$(macaddr_add "$label_mac" 1)
 		;;
 	xiaomi,mi-router-ax3000t|\
 	xiaomi,mi-router-ax3000t-ubootmod|\
