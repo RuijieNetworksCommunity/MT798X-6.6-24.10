@@ -1989,3 +1989,26 @@ define Device/ruijie_rg-be72-pro-mod
   IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
 endef
 TARGET_DEVICES += ruijie_rg-be72-pro-mod
+
+define Device/ruijie_rg-be68-ultra
+  DEVICE_VENDOR := Ruijie
+  DEVICE_MODEL := RG-BE68 Ultra
+  DEVICE_DTS_DIR := ../dts
+  KERNEL_IN_UBI := 1
+  DEVICE_DTS := mt7988d-ruijie-rg-be68-ultra
+  DEVICE_PACKAGES += kmod-mt7992-23-firmware kmod-mt7992-firmware mt7988-wo-firmware swconfig kmod-rtl837x_gsw
+  IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
+endef
+TARGET_DEVICES += ruijie_rg-be68-ultra
+
+define Device/ruijie_rg-be68-ultra-mod
+  DEVICE_VENDOR := Ruijie
+  DEVICE_MODEL := RG-BE68 Ultra
+  DEVICE_VARIANT := (U-Boot mod)
+  DEVICE_DTS_DIR := ../dts
+  KERNEL_IN_UBI := 1
+  DEVICE_DTS := mt7988d-ruijie-rg-be68-ultra-mod
+  DEVICE_PACKAGES += kmod-mt7992-23-firmware kmod-mt7992-firmware mt7988-wo-firmware swconfig kmod-rtl837x_gsw
+  IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
+endef
+TARGET_DEVICES += ruijie_rg-be68-ultra-mod

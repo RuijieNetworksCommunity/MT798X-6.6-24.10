@@ -1,0 +1,15 @@
+
+/dts-v1/;
+#include "mt7988d-ruijie-rg-be68-ultra-base.dtsi"
+
+/ {
+	model = "Ruijie BE68 Ultra";
+	compatible = "ruijie,rg-be68-ultra", "mediatek,mt7988d";
+};
+
+&partitions {
+	partition@780000 {
+		label = "ubi";
+		reg = <0x780000 0x7080000>;
+	};
+};
