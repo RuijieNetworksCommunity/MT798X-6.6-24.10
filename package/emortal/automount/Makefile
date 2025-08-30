@@ -29,8 +29,23 @@ define Package/automount
     +kmod-fs-ext4 \
     +kmod-fs-exfat \
     +kmod-fs-vfat \
-    +ntfs3-mount
+    +USE_NTFS_DRIVER_ntfs3-mount:ntfs3-mount \
+    +USE_NTFS_DRIVER_ntfs-3g:ntfs-3g
   PKGARCH:=all
+endef
+
+define Package/automount/config
+choice
+  depends on PACKAGE_automount
+  prompt "Use witch ntfs driver"
+  default USE_NTFS_DRIVER_ntfs3-mount
+  help
+    Use witch ntfs driver
+  config USE_NTFS_DRIVER_ntfs3-mount
+    bool "ntfs3-mount"
+  config USE_NTFS_DRIVER_ntfs-3g
+    bool "ntfs-3g"
+endchoice
 endef
 
 define Package/ntfs3-mount
