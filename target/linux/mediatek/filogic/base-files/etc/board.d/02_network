@@ -354,17 +354,22 @@ mediatek_setup_macs()
 		lan_mac=$(macaddr_add "$label_mac" 1)
 		;;
 	ruijie,rg-be72-pro|\
-	ruijie,rg-be72-pro-mod)
-		label_mac=$(mtd_get_mac_ascii product_info ethaddr)
-		lan_mac=$label_mac
-		wan_mac=$(macaddr_add "$label_mac" 1)
-		;;
-
+	ruijie,rg-be72-pro-mod|\
 	ruijie,rg-be68-ultra|\
 	ruijie,rg-be68-ultra-mod)
 		label_mac=$(mtd_get_mac_ascii product_info ethaddr)
 		lan_mac=$label_mac
 		wan_mac=$(macaddr_add "$label_mac" 1)
+		local b0dat="$(l1dat if2dat ra0)"
+		local b1dat="$(l1dat if2dat rai0)"
+		if [ -f ${b0dat} ] && ! grep -q "MacAddress=" ${b0dat}; then
+			local b0mac="$(macaddr_add $label_mac 2)"
+			echo "MacAddress=$b0mac" >> ${b0dat}
+		fi
+		if [ -f ${b1dat} ] && ! grep -q "MacAddress=" ${b1dat}; then
+			local b1mac="$(macaddr_add $label_mac 3)"
+			echo "MacAddress=$b1mac" >> ${b1dat}
+		fi
 		;;
 	xiaomi,mi-router-ax3000t|\
 	xiaomi,mi-router-ax3000t-ubootmod|\
