@@ -250,9 +250,9 @@ mediatek_setup_interfaces()
 		;;
 	ruijie,rg-be68-ultra|\
 	ruijie,rg-be68-ultra-mod)
-		ucidef_set_interfaces_lan_wan "eth2.2" eth2.1
+		ucidef_set_interfaces_lan_wan "eth0.2" eth0.1
 		ucidef_add_switch "switch0" \
-					"0@eth2" "1:wan" "2:lan" "3:lan" "4:lan"
+					"0@eth0" "1:wan" "2:lan" "3:lan" "4:lan"
 		;;
 	mediatek,mt7988*)
 		local sys_switch=$(mediatek_get_switch_type)
