@@ -2126,8 +2126,10 @@ static unsigned int skb_to_hnat_info(struct sk_buff *skb,
 	/* Before entry enter BIND state, write other fields first,
 	 * prevent racing with hardware accesses.
 	 */
-	memcpy(&(foe->ipv6_hnapt.ipv6_sip0), &(entry.ipv6_hnapt.ipv6_sip0),
-		       sizeof(struct foe_entry) - sizeof(entry.bfib1));
+	struct hnat_bind_info_blk bfib1_tmp = foe->ipv6_hnapt.bfib1;
+	memcpy(&foe->ipv6_hnapt, &entry.ipv6_hnapt,
+       sizeof(entry.ipv6_hnapt));
+	foe->ipv6_hnapt.bfib1 = bfib1_tmp;
 	/* We must ensure all info has been updated before set to hw */
 	wmb();
 	/* After other fields have been written, write info1 to BIND the entry */
@@ -2401,15 +2403,17 @@ int mtk_sw_nat_hook_tx(struct sk_buff *skb, int gmac_no)
 	/* We must ensure all info has been updfated before set to hw */
 	wmb();
 	/* Before entry enter BIND state, write other fields first,
-         * prevent racing with hardware accesses.
-         */
-	memcpy(&(hw_entry->ipv6_hnapt.ipv6_sip0), &(entry.ipv6_hnapt.ipv6_sip0),
-		       sizeof(struct foe_entry) - sizeof(entry.bfib1));
-        /* We must ensure all info has been updated before set to hw */
-        wmb();
-        /* After other fields have been writtefn, write info1 to BIND the entry */
-        memcpy(&hw_entry->bfib1, &entry.bfib1, sizeof(entry.bfib1));
-        dma_wmb();
+	 * prevent racing with hardware accesses.
+	*/
+	struct hnat_bind_info_blk bfib1_tmp = hw_entry->ipv6_hnapt.bfib1;
+	memcpy(&hw_entry->ipv6_hnapt, &entry.ipv6_hnapt,
+       sizeof(entry.ipv6_hnapt));
+	hw_entry->ipv6_hnapt.bfib1 = bfib1_tmp;
+	/* We must ensure all info has been updated before set to hw */
+	wmb();
+	/* After other fields have been writtefn, write info1 to BIND the entry */
+	memcpy(&hw_entry->bfib1, &entry.bfib1, sizeof(entry.bfib1));
+	dma_wmb();
 
 #if defined(CONFIG_MEDIATEK_NETSYS_V3)
 	if (debug_level >= 7) {
