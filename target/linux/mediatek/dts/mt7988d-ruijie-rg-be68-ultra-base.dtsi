@@ -211,6 +211,8 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pcie0_1_pins>;
 	reset-gpios = <&pio 7 GPIO_ACTIVE_LOW>;
+	wifi-reset-gpios = <&pio 7 GPIO_ACTIVE_HIGH>;
+	wifi-reset-msleep = <100>;
 	status = "okay";
 
 	pcie@0,0 {
