@@ -1,0 +1,368 @@
+name: Ruijie Openwrt Development
+
+on:
+  push:
+    branches: [ "mt798x-mt799x-mtwifi_be72pro_be68u" ]
+  pull_request:
+    branches: [ "mt798x-mt799x-mtwifi_be72pro_be68u" ]
+  workflow_dispatch:
+
+env:
+  UPLOAD_BIN_DIR: true
+  UPLOAD_FIRMWARE: true
+  UPLOAD_RELEASE: true
+  TZ: Asia/Shanghai
+
+jobs:
+  postmsg:
+    name: Post Group Messages
+    runs-on: ubuntu-22.04
+    steps:
+    - name: Checkout
+      uses: actions/checkout@main
+
+    - name: Get Commit Info
+      id: get_commit
+      run: |
+        COMMIT_MSG=$(git log -1 --pretty=%B | tr '\n' ' ' | xargs)
+        COMMIT_AUTHOR=$(git log -1 --pretty=%an)
+        echo "COMMIT_MSG=$COMMIT_MSG" >> $GITHUB_OUTPUT
+        echo "COMMIT_AUTHOR=$COMMIT_AUTHOR" >> $GITHUB_OUTPUT
+
+    # - name: Send Messages
+    #   id: request
+    #   uses: tyrrrz/action-http-request@master
+    #   with:
+    #     url: https://api.emtips.net/qqbot/send_group_msg
+    #     method: POST
+    #     headers: |
+    #       Content-Type: application/json
+    #       Authorization: ${{ secrets.ORG_QQ_BOOT_SECRET }}
+    #     body: |
+    #       {
+    #           "group_id": "860015881",
+    #           "message": [
+    #               {
+    #                   "type": "text",
+    #                   "data": {
+    #                       "text": "【更新姬 V0.0.1】【更新提示】\n检测到新的Github Action开发版构建实例，仓库名【${{ github.repository }}】，提交人【${{ steps.get_commit.outputs.COMMIT_AUTHOR }}】，更改内容【${{ steps.get_commit.outputs.COMMIT_MSG }}】，系统已开始构建，请耐心等待，构建完成后可于仓库的Release处下载。（如果长时间未生成Release，请召唤管理）\n"
+    #                   }
+    #               }
+    #           ]
+    #       }
+    #     retry-count: 3
+    #     retry-delay: 500
+
+  cache-toolchain:
+    name: Compile & Cache Toolchain
+    runs-on: ubuntu-22.04
+    steps:
+    - name: Initialization Environment
+      id: env
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        sudo apt-get update
+        sudo apt install -y ack antlr3 asciidoc autoconf automake autopoint binutils bison build-essential \
+          bzip2 ccache clang clangd cmake cpio curl device-tree-compiler ecj fastjar flex gawk gettext gcc-multilib \
+          g++-multilib git gnutls-dev gperf haveged help2man intltool lib32gcc-s1 libc6-dev-i386 libelf-dev \
+          libglib2.0-dev libgmp3-dev libltdl-dev libmpc-dev libmpfr-dev libncurses5-dev libncursesw5 \
+          libncursesw5-dev libncurses-dev libpython3-dev libreadline-dev libssl-dev libtool libyaml-dev libz-dev \
+          lld lldb llvm lrzsz mkisofs msmtp nano ninja-build p7zip p7zip-full patch pkgconf python2.7 python3 \
+          python3-pip python3-ply python3-docutils python3-pyelftools qemu-utils re2c rsync scons squashfs-tools \
+          subversion swig texinfo uglifyjs upx-ucl unzip vim wget xmlto xxd zlib1g-dev zstd
+        sudo apt-get clean
+        sudo timedatectl set-timezone "$TZ"
+
+    - name: Optimize Disk
+      uses: "hugoalh/disk-space-optimizer-ghaction@v0.8.1"
+      with:
+        operate_sudo: "True"
+        general_include: ".+"
+        general_exclude: |-
+          ^GCC$
+          ^G\+\+$
+          Clang
+          LLVM
+        docker_include: ".+"
+        docker_prune: "True"
+        docker_clean: "True"
+        apt_prune: "True"
+        apt_clean: "True"
+        homebrew_prune: "True"
+        homebrew_clean: "True"
+        npm_prune: "True"
+        npm_clean: "True"
+        os_swap: "True"
+
+    - name: Combine Disks
+      uses: easimon/maximize-build-space@master
+      with: 
+        swap-size-mb: 1024
+        temp-reserve-mb: 100
+        root-reserve-mb: 1024
+        remove-dotnet: 'true'
+        remove-android: 'true'
+        remove-haskell: 'true'
+        remove-codeql: 'true'
+        remove-docker-images: 'true'
+
+    - name: Checkout Repository
+      id: checkout
+      uses: actions/checkout@main
+
+    - name: Add SSH Private key
+      id: dl-rep
+      uses: webfactory/ssh-agent@v0.9.0
+      with:
+        ssh-private-key: |
+          ${{ secrets.SSH_PRIVATE_KEY_RTL837X_DRIVER }}
+
+    - name: Clone rtl837x driver
+      run: git clone git@github.com:RuijieNetworksCommunity/rtl837x-gsw-driver.git package/rtl837x-gsw-driver
+
+    - name: Cache DL
+      uses: actions/cache@v4
+      with:
+        path: dl
+        key: mt798x-dl-${{ runner.os }}-${{ hashFiles('feeds.conf.default') }}-${{ hashFiles('.github/workflows/cache-control') }}
+
+    - name: Cache Feeds
+      uses: actions/cache@v4
+      with:
+        path: feeds
+        key: mt798x-feeds-${{ runner.os }}-${{ hashFiles('feeds.conf.default') }}-${{ hashFiles('.github/workflows/cache-control') }}
+
+    - name: Cache Toolchain
+      uses: RuijieNetworksCommunity/cache-wrt-toolchain@main
+      with:
+        mixkey: ${{ hashFiles('.github/workflows/cache-control') }}
+
+    - name: Update Feeds
+      id: update-feeds
+      run: ./scripts/feeds update -a
+
+    - name: Install Feeds
+      id: install-feeds
+      run: ./scripts/feeds install -a
+
+    - name: Load Configuration
+      id: load-config
+      run: |
+        [ -e defconfig/mt7988.config ] && cp defconfig/mt7988.config .config
+
+    - name: Make Compile Configuration
+      id: make-compile-config
+      run: |
+        make defconfig
+
+    - name: Download Package
+      id: download-package
+      run: |
+        make download -j$(nproc)
+        find dl -size -1024c -exec ls -l {} \;
+        find dl -size -1024c -exec rm -f {} \;
+
+    - name: Compile Toolchain
+      id: compile
+      run: |
+        echo -e "$(nproc) thread compile"
+        make -j$(($(nproc) * 3 / 2)) toolchain/install || make -j1 toolchain/install || make -j1 V=s toolchain/install
+        echo "status=success" >> $GITHUB_OUTPUT
+
+  mt7988-lite:
+    name: MT7988 Lite Build
+    runs-on: ubuntu-22.04
+    needs: [cache-toolchain]
+    steps:
+    - name: Initialization Environment
+      id: env
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        sudo apt-get update
+        sudo apt install -y ack antlr3 asciidoc autoconf automake autopoint binutils bison build-essential \
+          bzip2 ccache clang clangd cmake cpio curl device-tree-compiler ecj fastjar flex gawk gettext gcc-multilib \
+          g++-multilib git gnutls-dev gperf haveged help2man intltool lib32gcc-s1 libc6-dev-i386 libelf-dev \
+          libglib2.0-dev libgmp3-dev libltdl-dev libmpc-dev libmpfr-dev libncurses5-dev libncursesw5 \
+          libncursesw5-dev libncurses-dev libpython3-dev libreadline-dev libssl-dev libtool libyaml-dev libz-dev \
+          lld lldb llvm lrzsz mkisofs msmtp nano ninja-build p7zip p7zip-full patch pkgconf python2.7 python3 \
+          python3-pip python3-ply python3-docutils python3-pyelftools qemu-utils re2c rsync scons squashfs-tools \
+          subversion swig texinfo uglifyjs upx-ucl unzip vim wget xmlto xxd zlib1g-dev zstd
+        sudo apt-get clean
+        sudo timedatectl set-timezone "$TZ"
+
+    - name: Optimize Disk
+      uses: "hugoalh/disk-space-optimizer-ghaction@v0.8.1"
+      with:
+        operate_sudo: "True"
+        general_include: ".+"
+        general_exclude: |-
+          ^GCC$
+          ^G\+\+$
+          Clang
+          LLVM
+        docker_include: ".+"
+        docker_prune: "True"
+        docker_clean: "True"
+        apt_prune: "True"
+        apt_clean: "True"
+        homebrew_prune: "True"
+        homebrew_clean: "True"
+        npm_prune: "True"
+        npm_clean: "True"
+        os_swap: "True"
+
+    - name: Combine Disks
+      uses: easimon/maximize-build-space@master
+      with: 
+        swap-size-mb: 1024
+        temp-reserve-mb: 100
+        root-reserve-mb: 1024
+        remove-dotnet: 'true'
+        remove-android: 'true'
+        remove-haskell: 'true'
+        remove-codeql: 'true'
+        remove-docker-images: 'true'
+
+    - name: Checkout Repository
+      id: checkout
+      uses: actions/checkout@main
+
+    - name: Add SSH Private key
+      id: dl-rep
+      uses: webfactory/ssh-agent@v0.9.0
+      with:
+        ssh-private-key: |
+          ${{ secrets.SSH_PRIVATE_KEY_RTL837X_DRIVER }}
+
+    - name: Clone rtl837x driver
+      run: git clone git@github.com:RuijieNetworksCommunity/rtl837x-gsw-driver.git package/rtl837x-gsw-driver
+
+    - name: Cache DL
+      uses: actions/cache@v4
+      with:
+        path: dl
+        key: mt798x-dl-${{ runner.os }}-${{ hashFiles('feeds.conf.default') }}-${{ hashFiles('.github/workflows/cache-control') }}
+
+    - name: Cache Feeds
+      uses: actions/cache@v4
+      with:
+        path: feeds
+        key: mt798x-feeds-${{ runner.os }}-${{ hashFiles('feeds.conf.default') }}-${{ hashFiles('.github/workflows/cache-control') }}
+
+    - name: Cache Toolchain
+      uses: RuijieNetworksCommunity/cache-wrt-toolchain@main
+      with:
+        mixkey: ${{ hashFiles('.github/workflows/cache-control') }}
+
+    - name: Update Feeds
+      id: update-feeds
+      run: ./scripts/feeds update -a
+
+    - name: Install Feeds
+      id: install-feeds
+      run: ./scripts/feeds install -a
+
+    - name: Load Configuration
+      id: load-config
+      run: |
+        [ -e defconfig/mt7988-be72_pro_lite.config ] && cp defconfig/mt7988-be72_pro_lite.config .config
+
+    - name: Make Compile Configuration
+      id: make-compile-config
+      run: |
+        make defconfig
+
+    - name: Download Package
+      id: download-package
+      run: |
+        make download -j$(nproc)
+        find dl -size -1024c -exec ls -l {} \;
+        find dl -size -1024c -exec rm -f {} \;
+
+    - name: Compile Firmware
+      id: compile
+      run: |
+        echo -e "$(nproc) thread compile"
+        make -j$(($(nproc) * 3 / 2)) || make -j1 || make -j1 V=s
+        echo "status=success" >> $GITHUB_OUTPUT
+
+    - name: Check Disk Space
+      if: (!cancelled())
+      run: df -hT
+
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@main
+      if: steps.compile.outputs.status == 'success' && env.UPLOAD_BIN_DIR == 'true'
+      with:
+        name: mt7988-lite-bin
+        path: bin
+
+  lite-release:
+    name: Publish Lite Release
+    runs-on: ubuntu-22.04
+    needs: [mt7988-lite]
+    steps:
+    - name: Checkout Repository
+      id: checkout
+      uses: actions/checkout@main
+      with:
+        fetch-depth: 2
+
+    - name: Download MT7988 Lite Artifacts
+      id: download-mt7988
+      if: (!cancelled())
+      uses: actions/download-artifact@main
+      with:
+        name: mt7988-lite-bin
+        path: artifacts/mt7988
+
+    - name: Organize Files
+      id: organize
+      if: env.UPLOAD_FIRMWARE == 'true' && !cancelled()
+      run: |
+        mkdir -p release
+
+        rm -rf artifacts/mt7988/packages
+
+        find artifacts/mt7988/targets/mediatek/filogic/ -type f ! -name "*.bin" -delete
+        find artifacts/mt7988/targets/mediatek/filogic/ -type f -name "*-bl2.bin" -delete
+        find artifacts/mt7988/targets/mediatek/filogic/ -mindepth 1 -type d -exec rm -rf {} +
+
+        cp -r artifacts/mt7988/targets/mediatek/filogic/*.bin release/
+
+        cd release
+
+        echo "FIRMWARE=$PWD" >> $GITHUB_ENV
+        echo "status=success" >> $GITHUB_OUTPUT
+
+    - name: Generate Release TAG
+      id: tag
+      if: steps.organize.outputs.status == 'success' && env.UPLOAD_RELEASE == 'true' && !cancelled()
+      run: |
+        SHORT_HASH=$(git rev-parse --short HEAD)
+        BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD | tr '/' '-')
+        echo "release_tag=R$(date +"%y.%-m.%-d.%H%M")-$SHORT_HASH-$BRANCH_NAME-lite" >> $GITHUB_OUTPUT
+        touch release.txt
+        {
+          echo "## Changes:"
+          echo ""
+          git log -1 --pretty=format:"- %s (%h) by %an"
+          echo ""
+          echo "### Diff:"
+          git diff --name-only HEAD^ HEAD | sed 's/^/- /'
+        } > release.txt
+
+        echo "status=success" >> $GITHUB_OUTPUT
+
+    - name: Upload Release
+      uses: softprops/action-gh-release@master
+      if: steps.tag.outputs.status == 'success' && !cancelled()
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.tag.outputs.release_tag }}
+        body_path: release.txt
+        files: ${{ env.FIRMWARE }}/*
+        prerelease: true
