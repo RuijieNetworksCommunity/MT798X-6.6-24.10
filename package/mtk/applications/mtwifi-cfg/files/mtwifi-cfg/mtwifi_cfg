@@ -415,20 +415,20 @@ function mtwifi_cfg_setup(argv)
     elseif is_be_mode(cfg) then
         WirelessMode = 22 -- PHY_11BE_24G
     end
-elseif cfg.config.band == "5g" then
-    WirelessMode = 15 -- PHY_11VHT_N_MIXED
-    if is_ax_mode(cfg) then
-        WirelessMode = 17 -- PHY_11AX_5G
-    elseif is_be_mode(cfg) then
-        WirelessMode = 23 -- PHY_11BE_5G
+    elseif cfg.config.band == "5g" then
+        WirelessMode = 15 -- PHY_11VHT_N_MIXED
+        if is_ax_mode(cfg) then
+            WirelessMode = 17 -- PHY_11AX_5G
+        elseif is_be_mode(cfg) then
+            WirelessMode = 23 -- PHY_11BE_5G
+        end
+    elseif cfg.config.band == "6g" then
+        if is_ax_mode(cfg) then
+            WirelessMode = 18 -- PHY_11AX_6G
+        elseif is_be_mode(cfg) then
+            WirelessMode = 24 -- PHY_11BE_6G
+        end
     end
-elseif cfg.config.band == "6g" then
-    if is_ax_mode(cfg) then
-        WirelessMode = 18 -- PHY_11AX_6G
-    elseif is_be_mode(cfg) then
-        WirelessMode = 24 -- PHY_11BE_6G
-    end
-end
 
 
     if not WirelessMode then
@@ -578,8 +578,8 @@ end
             set_idx_dat(dats, apidx, "WPAPSK", v.config.key or "")
             set_dat(dats, apidx, "NoForwarding", 0)
             set_dat(dats, apidx, "HideSSID", v.config.hidden)
-	    set_dat(dats, apidx, "MldGroup", v.config.mlo)
-	    if not v.config.mlo then
+            set_dat(dats, apidx, "MldGroup", v.config.mlo)
+            if not v.config.mlo then
                     set_dat(dats, apidx, "MldGroup", "0")
             else
                     set_dat(dats, apidx, "MldGroup", "1")
