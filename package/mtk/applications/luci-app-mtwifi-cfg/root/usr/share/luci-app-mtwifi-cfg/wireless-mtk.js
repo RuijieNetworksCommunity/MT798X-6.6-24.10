@@ -1605,14 +1605,15 @@ return view.extend({
 					crypto_modes.push(['wep-shared', _('WEP Shared Key'),         10]);
 				}
 				else if (hwtype == 'mtwifi') {
+					if (band == '6g') {
 					crypto_modes.push(['sae', 'WPA3-SAE', 31]);
+					}
 					crypto_modes.push(['owe', 'OWE', 1]);
 					if (band != '6g') {
 						crypto_modes.push(['psk2', 'WPA2-PSK', 35]);
 						crypto_modes.push(['psk', 'WPA-PSK', 12]);
 						if (ifmode == 'ap') {
 							crypto_modes.push(['psk-mixed', 'WPA-PSK/WPA2-PSK Mixed Mode', 22]);
-							crypto_modes.push(['sae-mixed', 'WPA2-PSK/WPA3-SAE Mixed Mode', 36]);
 						}
 					}
 				}
