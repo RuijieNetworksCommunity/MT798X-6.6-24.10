@@ -194,11 +194,8 @@
 		ramoops_reserved: ramoops@42ff0000 {
 			no-map;
 			compatible = "ramoops";
-			reg = <0x0 0x45001000 0x0 0x00140000>;
-			ftrace-size = <0x20000>;
-			record-size = <0x20000>;
-			console-size = <0x20000>;
-			pmsg-size = <0x80000>;
+			reg = <0 0x42ff0000 0 0x10000>;
+			record-size = <0x1000>;
 		};
 		
 		/* 320 KiB reserved for ARM Trusted Firmware (BL31 and BL32) */
