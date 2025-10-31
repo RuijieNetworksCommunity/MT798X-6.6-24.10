@@ -859,42 +859,39 @@ INT rt28xx_ap_ioctl(void *net_dev_obj, void *data_obj, int cmd) /* snowpin for a
 		wrqin->u.txpower.fixed = 0;/* Hardware should not use auto select */
 		break;
 	}
-		case SIOCGIWRANGE:	/*Get range of parameters */
+	case SIOCGIWRANGE:	/*Get range of parameters */
 		if (wrqin->u.data.pointer) {
 #if (KERNEL_VERSION(5, 4, 0) > LINUX_VERSION_CODE)
-                        if (access_ok(VERIFY_WRITE, wrqin->u.data.pointer, sizeof(struct iw_range)) != TRUE)
+		if (access_ok(VERIFY_WRITE, wrqin->u.data.pointer, sizeof(struct iw_range)) != TRUE)
 #else
-                        if (access_ok(wrqin->u.data.pointer, sizeof(struct iw_range)) != TRUE)
+		if (access_ok(wrqin->u.data.pointer, sizeof(struct iw_range)) != TRUE)
 #endif
-                                break;
+			break;
 
-                        if (sizeof(struct iw_range) <= wrq->u.data.length) {
-                                struct iw_range range;
-                                USHORT i = 0;
-                                CHANNEL_CTRL *pChCtrl;
+			if (sizeof(struct iw_range) <= wrq->u.data.length) {
+				struct iw_range range;
+				USHORT i = 0;
+				CHANNEL_CTRL *pChCtrl;
 				PRTMP_ADAPTER pAdin = (PRTMP_ADAPTER)pAd;
-                                UINT32 mhz = 0;
+				UINT32 mhz = 0;
 				memset(&range, 0, sizeof(struct iw_range));
 				range.we_version_compiled = WIRELESS_EXT;
-                                pChCtrl = hc_get_channel_ctrl(pAdin->hdev_ctrl);
+				pChCtrl = hc_get_channel_ctrl(pAdin->hdev_ctrl);
+				for (i = 0; i < pChCtrl->ChListNum && i < IW_MAX_FREQUENCIES; i++) {
+					mhz = channel_to_frequency(pAdin->BandSel, pChCtrl->ChList[i].Channel);
+					range.freq[i].m = mhz;
+					range.freq[i].e = 6;
+					range.freq[i].i = pChCtrl->ChList[i].Channel;
+				}
+				range.num_channels = i;
+				range.num_frequency = i;
 
-                                for (i = 0; i < pChCtrl->ChListNum && i < IW_MAX_FREQUENCIES; i++) {
-
-				mhz = channel_to_frequency(pAdin->BandSel, pChCtrl->ChList[i].Channel);
-                                        range.freq[i].m = mhz;
-                                        range.freq[i].e = 6;
-                                        range.freq[i].i = pChCtrl->ChList[i].Channel;
-                                }
-
-                                range.num_channels = i;
-                                range.num_frequency = i;
-
-                                wrqin->u.data.length = sizeof(struct iw_range);
-                                 if (copy_to_user(wrqin->u.data.pointer, &range, sizeof(struct iw_range)))
-                                        Status = RTMP_IO_EFAULT;
-                        } else {
-                                Status = RTMP_IO_E2BIG;
-                        }
+					wrqin->u.data.length = sizeof(struct iw_range);
+				if (copy_to_user(wrqin->u.data.pointer, &range, sizeof(struct iw_range)))
+					Status = RTMP_IO_EFAULT;
+			} else {
+					Status = RTMP_IO_E2BIG;
+			}
 			break;
 		}
 	case SIOCGIWRETRY:	/*get retry limits and lifetime */
