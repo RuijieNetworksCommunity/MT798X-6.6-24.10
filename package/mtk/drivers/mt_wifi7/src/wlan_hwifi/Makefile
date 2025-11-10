@@ -81,6 +81,7 @@ ccflags-y += -Wno-error=attribute-warning
 ccflags-y += -Wno-error=enum-int-mismatch
 ccflags-y += -Wno-error=cast-function-type
 ccflags-y += -Wno-error=implicit-fallthrough
+ccflags-y += -Wno-error=unused-variable
 
 obj-$(CONFIG_HWIFI) += mtk_hwifi.o
 mtk_hwifi-y := main.o bus.o mac_if.o chips.o utility.o

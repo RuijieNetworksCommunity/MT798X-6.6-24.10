@@ -100,6 +100,7 @@ ccflags-y += -Wno-error=enum-int-mismatch
 ccflags-y += -Wno-error=cast-function-type
 ccflags-y += -Wno-error=implicit-fallthrough
 ccflags-y += -Wno-error=discarded-qualifiers
+ccflags-y += -Wno-error=unused-variable
 
 ifeq ($(CONFIG_CFG80211_SUPPORT),y)
     GLOBAL_INCLUDES_NL80211 = include/uapi/linux/mtk_nl80211_inc
