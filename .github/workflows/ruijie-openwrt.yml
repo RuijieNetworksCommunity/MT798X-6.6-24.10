@@ -29,29 +29,29 @@ jobs:
         echo "COMMIT_MSG=$COMMIT_MSG" >> $GITHUB_OUTPUT
         echo "COMMIT_AUTHOR=$COMMIT_AUTHOR" >> $GITHUB_OUTPUT
 
-    # - name: Send Messages
-    #   id: request
-    #   uses: tyrrrz/action-http-request@master
-    #   with:
-    #     url: https://api.emtips.net/qqbot/send_group_msg
-    #     method: POST
-    #     headers: |
-    #       Content-Type: application/json
-    #       Authorization: ${{ secrets.ORG_QQ_BOOT_SECRET }}
-    #     body: |
-    #       {
-    #           "group_id": "860015881",
-    #           "message": [
-    #               {
-    #                   "type": "text",
-    #                   "data": {
-    #                       "text": "【更新姬 V0.0.1】【更新提示】\n检测到新的Github Action开发版构建实例，仓库名【${{ github.repository }}】，提交人【${{ steps.get_commit.outputs.COMMIT_AUTHOR }}】，更改内容【${{ steps.get_commit.outputs.COMMIT_MSG }}】，系统已开始构建，请耐心等待，构建完成后可于仓库的Release处下载。（如果长时间未生成Release，请召唤管理）\n"
-    #                   }
-    #               }
-    #           ]
-    #       }
-    #     retry-count: 3
-    #     retry-delay: 500
+    - name: Send Messages
+      id: request
+      uses: tyrrrz/action-http-request@master
+      with:
+        url: https://api.emtips.net/qqbot/send_group_msg
+        method: POST
+        headers: |
+          Content-Type: application/json
+          Authorization: ${{ secrets.ORG_QQ_BOOT_SECRET }}
+        body: |
+          {
+              "group_id": "860015881",
+              "message": [
+                  {
+                      "type": "text",
+                      "data": {
+                          "text": "【更新姬 V0.0.1】【更新提示】\n检测到新的Github Action开发版构建实例，仓库名【${{ github.repository }}】，提交人【${{ steps.get_commit.outputs.COMMIT_AUTHOR }}】，更改内容【${{ steps.get_commit.outputs.COMMIT_MSG }}】，系统已开始构建，请耐心等待，构建完成后可于仓库的Release处下载。（如果长时间未生成Release，请召唤管理）\n"
+                      }
+                  }
+              ]
+          }
+        retry-count: 3
+        retry-delay: 500
 
   cache-toolchain:
     name: Compile & Cache Toolchain
