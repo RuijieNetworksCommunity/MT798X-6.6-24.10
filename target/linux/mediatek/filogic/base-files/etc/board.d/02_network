@@ -240,7 +240,7 @@ mediatek_setup_interfaces()
 		;;
 	hiveton,h5000m|\
 	mediatek,mt7987*)
-		ucidef_set_interfaces_lan_wan "eth1" eth0
+		ucidef_set_interfaces_lan_wan "eth0 hnat" eth1
 		;;
 	ruijie,rg-be72-pro|\
 	ruijie,rg-be72-pro-mod)

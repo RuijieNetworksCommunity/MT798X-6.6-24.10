@@ -41,7 +41,7 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pcie0_pins>;
 	wifi-reset-gpios = <&pio 38 GPIO_ACTIVE_HIGH>;
-        wifi-reset-msleep = <100>;
+        wifi-reset-msleep = <1000>;
 	status = "okay";
 };
 
