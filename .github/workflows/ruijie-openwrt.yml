@@ -267,7 +267,7 @@ jobs:
     - name: Load Configuration
       id: load-config
       run: |
-        [ -e defconfig/mt7988-be72_pro_lite.config ] && cp defconfig/mt7988-be72_pro_lite.config .config
+        [ -e defconfig/mt7988-ruijie-lite.config ] && cp defconfig/mt7988-ruijie-lite.config .config
 
     - name: Make Compile Configuration
       id: make-compile-config
