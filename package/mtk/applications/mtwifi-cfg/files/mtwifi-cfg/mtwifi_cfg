@@ -467,6 +467,8 @@ function mtwifi_cfg_setup(argv)
     dats.ApCliEnable = 0
     dats.ApCliSsid = ""
     dats.ApCliBssid = ""
+    dats.MACRepeaterEn = 0
+    dats.ApcliMacAddress = ""
     dats.ApCliAuthMode = ""
     dats.ApCliEncrypType = ""
     dats.ApCliWPAPSK = ""
@@ -481,6 +483,8 @@ function mtwifi_cfg_setup(argv)
             end
             dats.ApCliSsid = v.config.ssid or ""
             dats.ApCliBssid = v.config.bssid or ""
+            dats.MACRepeaterEn = (v.config.bssid and v.config.bssid ~= "") and 1 or 0
+            dats.ApcliMacAddress = v.config.macaddr or ""
             dats.ApCliAuthMode = defs.enc2dat[v.config.encryption][1]
             dats.ApCliEncrypType = defs.enc2dat[v.config.encryption][2]
             dats.ApCliWPAPSK = v.config.key or ""
@@ -560,12 +564,27 @@ function mtwifi_cfg_setup(argv)
         end
     end
 
-    for k,v in pairs(defs.vif_acl) do
-        for i = 0, defs.max_mbssid-1 do
-            dats[k..tostring(i)] = ""
-        end
-        for i = 0, bssid_num-1 do
-            dats[k..tostring(i)] = v
+    for _, vif_table in ipairs({defs.vif_mac, defs.vif_acl}) do
+        for k, v in pairs(vif_table) do
+            if k == "MacAddress" then
+                for i = 1, bssid_num-1 do
+                    dats[k..tostring(i)] = v
+                end
+                if bssid_num < defs.max_mbssid then
+                    for i = bssid_num, defs.max_mbssid-1 do
+                        dats[k..tostring(i)] = ""
+                    end
+                end
+            else
+                for i = 0, bssid_num-1 do
+                    dats[k..tostring(i)] = v
+                end
+                if bssid_num < defs.max_mbssid then
+                    for i = bssid_num, defs.max_mbssid-1 do
+                        dats[k..tostring(i)] = ""
+                    end
+                end
+            end
         end
     end
 
@@ -580,17 +599,18 @@ function mtwifi_cfg_setup(argv)
             set_dat(dats, apidx, "HideSSID", v.config.hidden)
             set_dat(dats, apidx, "MldGroup", v.config.mlo)
             if not v.config.mlo then
-                    set_dat(dats, apidx, "MldGroup", "0")
+                set_dat(dats, apidx, "MldGroup", "0")
+                if idx == 0 then
+                    dats.MacAddress = v.config.macaddr or ""
+                else
+                    set_idx_dat(dats, apidx, "MacAddress", v.config.macaddr or "")
+                end
             else
-                    set_dat(dats, apidx, "MldGroup", "1")
+                set_dat(dats, apidx, "MldGroup", "1")
             end
             set_dat(dats, apidx, "WmmCapable", v.config.wmm)
             set_dat(dats, apidx, "RRMEnable", v.config.ieee80211k)
             set_dat(dats, apidx, "RekeyInterval", v.config.wpa_group_rekey)
-            set_dat(dats, apidx, "MuMimoDlEnable", v.config.mumimo_dl)
-            set_dat(dats, apidx, "MuMimoUlEnable", v.config.mumimo_ul)
-            set_dat(dats, apidx, "MuOfdmaDlEnable", v.config.ofdma_dl)
-            set_dat(dats, apidx, "MuOfdmaUlEnable", v.config.ofdma_ul)
             set_dat(dats, apidx, "HT_AMSDU", v.config.amsdu)
             set_dat(dats, apidx, "HT_AutoBA", v.config.autoba)
             set_dat(dats, apidx, "APSDCapable", v.config.uapsd)
@@ -599,8 +619,18 @@ function mtwifi_cfg_setup(argv)
             set_dat(dats, apidx, "DtimPeriod",v.config.dtim_period)
             set_dat(dats, apidx, "WirelessMode", WirelessMode)
 
-            if is_ax_mode(cfg) or is_be_mode(cfg) then
+            if is_be_mode(cfg) then
+                set_dat(dats, apidx, "PpMuMimoDlEnable", not v.config.mumimo_dl and 0 or 1)
+                set_dat(dats, apidx, "PpMuMimoUlEnable", not v.config.mumimo_ul and 0 or 1)
+                set_dat(dats, apidx, "PpOfdmaDlEnable", v.config.ofdma_dl)
+                set_dat(dats, apidx, "PpOfdmaUlEnable", v.config.ofdma_ul)
                 set_dat(dats, apidx, "HT_BAWinSize", 1024)
+            elseif is_ax_mode(cfg) then
+                set_dat(dats, apidx, "MuMimoDlEnable", not v.config.mumimo_dl and 0 or 1)
+                set_dat(dats, apidx, "MuMimoUlEnable", not v.config.mumimo_ul and 0 or 1)
+                set_dat(dats, apidx, "MuOfdmaDlEnable", v.config.ofdma_dl)
+                set_dat(dats, apidx, "MuOfdmaUlEnable", v.config.ofdma_ul)
+                set_dat(dats, apidx, "HT_BAWinSize", 256)
             else
                 set_dat(dats, apidx, "HT_BAWinSize", 64)
             end
