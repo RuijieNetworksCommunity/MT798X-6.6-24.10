@@ -358,8 +358,29 @@ void ppd_dev_setting(void)
                                 }
                         }
                 } 
-        printk("\nrx now ppd dev is %s\n",hnat_priv->g_ppdev->name);
-        printk("\ntx now ppd dev is %s\n",ppd_dev->name);
+       	br_dev = __dev_get_by_name(&init_net, "eth2");
+        if (br_dev){
+        if (br_dev->flags & IFF_UP){
+		if (netif_carrier_ok(br_dev))
+			hnat_priv->g_ppdev = __dev_get_by_name(&init_net, "eth2");
+                }
+		}
+        br_dev = __dev_get_by_name(&init_net, "eth1");
+        if (br_dev){
+        if (br_dev->flags & IFF_UP){
+		if (netif_carrier_ok(br_dev))
+                hnat_priv->g_ppdev = __dev_get_by_name(&init_net, "eth1");
+                }
+		}
+	br_dev = __dev_get_by_name(&init_net, "eth0");
+        if (br_dev){
+        if (br_dev->flags & IFF_UP){
+		if (netif_carrier_ok(br_dev))
+                hnat_priv->g_ppdev = __dev_get_by_name(&init_net, "eth0");
+                }
+		}
+	pr_info("%s : now rx dev: %s, tx dev: %s\n", 
+		__func__, hnat_priv->g_ppdev->name, ppd_dev->name);
 }
 
 int nf_hnat_netdevice_event(struct notifier_block *unused, unsigned long event,

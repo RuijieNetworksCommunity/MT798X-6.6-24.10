@@ -1183,7 +1183,7 @@ enum FoeIpAct {
 	((hnat_priv->data->whnat &&						\
 	 (get_wifi_hook_if_index_from_dev(dev) != 0)) ? 1 : 0)
 #define IS_EXT(dev) ((get_index_from_dev(dev) != 0) ? 1 : 0)
-#define IS_PPD(dev) (!strcmp(dev->name, hnat_priv->ppd))
+#define IS_PPD(dev) (!strncmp(dev->name, hnat_priv->ppd,4))
 #define IS_IPV4_HNAPT(x) (((x)->bfib1.pkt_type == IPV4_HNAPT) ? 1 : 0)
 #define IS_IPV4_HNAT(x) (((x)->bfib1.pkt_type == IPV4_HNAT) ? 1 : 0)
 #define IS_IPV4_GRP(x) (IS_IPV4_HNAPT(x) | IS_IPV4_HNAT(x))

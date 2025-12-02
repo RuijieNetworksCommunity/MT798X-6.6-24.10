@@ -1354,6 +1354,10 @@ return view.extend({
 					o.default = o.enabled;
 					o.depends('mode', 'ap');
 
+					o = ss.taboption('advanced', form.Flag, 'bss_transition', _('BSS Transition'), _('802.11v: Basic Service Set (BSS) transition management.'));
+					o.depends('mode', 'ap');
+					o.rmempty = true;
+
 					o = ss.taboption('advanced', form.Value, 'wpa_group_rekey', _('Time interval for rekeying GTK'), _('sec'));
 					o.optional    = true;
 					o.placeholder = 3600;
