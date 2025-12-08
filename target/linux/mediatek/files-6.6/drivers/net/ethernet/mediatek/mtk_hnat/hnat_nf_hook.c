@@ -365,6 +365,13 @@ void ppd_dev_setting(void)
 			hnat_priv->g_ppdev = __dev_get_by_name(&init_net, "eth2");
                 }
 		}
+		br_dev = __dev_get_by_name(&init_net, "hnat");
+        if (br_dev){
+        if (br_dev->flags & IFF_UP){
+		if (netif_carrier_ok(br_dev))
+                hnat_priv->g_ppdev = __dev_get_by_name(&init_net, "hnat");
+                }
+		}
         br_dev = __dev_get_by_name(&init_net, "eth1");
         if (br_dev){
         if (br_dev->flags & IFF_UP){
@@ -372,7 +379,7 @@ void ppd_dev_setting(void)
                 hnat_priv->g_ppdev = __dev_get_by_name(&init_net, "eth1");
                 }
 		}
-	br_dev = __dev_get_by_name(&init_net, "eth0");
+		br_dev = __dev_get_by_name(&init_net, "eth0");
         if (br_dev){
         if (br_dev->flags & IFF_UP){
 		if (netif_carrier_ok(br_dev))
