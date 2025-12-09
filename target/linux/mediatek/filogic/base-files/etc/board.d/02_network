@@ -160,8 +160,9 @@ mediatek_setup_interfaces()
 	keenetic,kn-3811|\
 	qihoo,360t7|\
 	routerich,ax3000|\
-	routerich,ax3000-ubootmod)
-		ucidef_set_interfaces_lan_wan "lan1 lan2 lan3" wan
+	routerich,ax3000-ubootmod|\
+	tplink,tl-7dr7230-rev1.0-sp2)
+		ucidef_set_interfaces_lan_wan "lan1 lan2 lan3" eth2
 		;;
 	asus,tuf-ax4200|\
 	jdcloud,re-cp-03|\

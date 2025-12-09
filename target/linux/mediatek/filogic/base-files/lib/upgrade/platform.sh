@@ -114,6 +114,7 @@ platform_do_upgrade() {
 	tplink,tl-xdr6086|\
 	tplink,tl-xdr6088|\
 	tplink,tl-xtr8488|\
+	tplink,tl-7dr7230-rev1.0-sp2|\
 	xiaomi,mi-router-ax3000t-ubootmod|\
 	xiaomi,redmi-router-ax6000-ubootmod|\
 	xiaomi,mi-router-wr30u-ubootmod|\
@@ -218,6 +219,7 @@ platform_check_image() {
 	bananapi,bpi-r4|\
 	bananapi,bpi-r4-poe|\
 	hiveton,h5000m|\
+	tplink,tl-7dr7230-rev1.0-sp2|\
 	cmcc,rax3000m)
 		magic="$(dd if="$1" bs=1 skip=257 count=5 2>/dev/null)"
 
