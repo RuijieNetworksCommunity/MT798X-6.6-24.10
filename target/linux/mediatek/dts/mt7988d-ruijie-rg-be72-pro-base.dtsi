@@ -9,8 +9,7 @@
 
 
 / {
-	model = "Ruijie BE72 PRO";
-	compatible = "ruijie,rg-be72-pro", "mediatek,mt7988d";
+	compatible = "mediatek,mt7988d";
 
 	aliases {
 		led-boot = &led_status_red;
