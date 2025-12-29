@@ -249,11 +249,17 @@ mediatek_setup_interfaces()
 		ucidef_add_switch "switch0" \
 					"0@eth2" "1:wan" "2:lan" "3:lan" "4:lan"
 		;;
+	ruijie,rg-be72-pro-dsa-mod)
+		ucidef_set_interfaces_lan_wan "lan1 lan2 lan3 lan4 lan5 lan6 lan7 lan8" wan
+		;;
 	ruijie,rg-be68-ultra|\
 	ruijie,rg-be68-ultra-mod)
 		ucidef_set_interfaces_lan_wan "eth2.2" eth2.1
 		ucidef_add_switch "switch0" \
 					"0@eth2" "1:wan" "2:lan" "3:lan" "4:lan"
+		;;
+	ruijie,rg-be68-ultra-dsa-mod)
+		ucidef_set_interfaces_lan_wan "lan1 lan2 lan3" wan
 		;;
 	mediatek,mt7988*)
 		local sys_switch=$(mediatek_get_switch_type)
@@ -364,10 +370,8 @@ mediatek_setup_macs()
 		wan_mac=$label_mac
 		lan_mac=$(macaddr_add "$label_mac" 1)
 		;;
-	ruijie,rg-be72-pro|\
-	ruijie,rg-be72-pro-mod|\
-	ruijie,rg-be68-ultra|\
-	ruijie,rg-be68-ultra-mod)
+	ruijie,rg-be72-pro*|\
+	ruijie,rg-be68-ultra*)
 		label_mac=$(mtd_get_mac_ascii product_info ethaddr)
 		lan_mac=$label_mac
 		wan_mac=$(macaddr_add "$label_mac" 1)

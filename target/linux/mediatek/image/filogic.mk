@@ -2015,6 +2015,14 @@ define Device/ruijie_rg-be72-pro-mod
 endef
 TARGET_DEVICES += ruijie_rg-be72-pro-mod
 
+define Device/ruijie_rg-be72-pro-dsa-mod
+  $(call Device/ruijie_rg-be72-pro-mod)
+  DEVICE_MODEL := RG-BE72 Pro DSA
+  DEVICE_DTS := mt7988d-ruijie-rg-be72-pro-dsa-mod
+  DEVICE_PACKAGES += kmod-rtl8372n_dsa
+endef
+TARGET_DEVICES += ruijie_rg-be72-pro-dsa-mod
+
 define Device/ruijie_rg-be68-ultra
   DEVICE_VENDOR := Ruijie
   DEVICE_MODEL := RG-BE68 Ultra
@@ -2037,3 +2045,11 @@ define Device/ruijie_rg-be68-ultra-mod
   IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
 endef
 TARGET_DEVICES += ruijie_rg-be68-ultra-mod
+
+define Device/ruijie_rg-be68-ultra-dsa-mod
+  $(call Device/ruijie_rg-be68-ultra-mod)
+  DEVICE_MODEL := RG-BE68 Ultra DSA
+  DEVICE_DTS := mt7988d-ruijie-rg-be68-ultra-dsa-mod
+  DEVICE_PACKAGES += kmod-rtl8372n_dsa
+endef
+TARGET_DEVICES += ruijie_rg-be68-ultra-dsa-mod

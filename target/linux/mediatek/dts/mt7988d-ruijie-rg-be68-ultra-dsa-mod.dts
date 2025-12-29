@@ -1,0 +1,94 @@
+
+/dts-v1/;
+#include "mt7988d-ruijie-rg-be68-ultra-base.dtsi"
+
+/ {
+	model = "Ruijie BE68 Ultra DSA(Uboot Mod)";
+	compatible = "ruijie,rg-be68-ultra-dsa-mod", "mediatek,mt7988d";
+
+	/delete-node/ rtl837x-gsw@1;
+};
+
+&partitions {
+	partition@780000 {
+		label = "ubi";
+		reg = <0x780000 0xe880000>;
+	};
+};
+
+&mdio_bus {
+	switch1: switch@1d {
+		compatible = "realtek,rtl8372n";
+		reg = <29>;
+		reset-gpios = <&pio 3 GPIO_ACTIVE_HIGH>;
+		
+		ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+			port@3 {
+				reg = <3>;
+				label = "cpu";
+				ethernet = <&gmac2>;
+				phy-mode = "10gbase-r";
+
+				fixed-link {
+					speed = <10000>;
+					full-duplex;
+					pause;
+					asym-pause;
+				};
+			};
+
+			port@4 {
+				reg = <4>;
+				label = "wan";
+				phy-mode = "internal";
+				phy-handle = <&internal_phy1>;
+			};
+
+			port@5 {
+				reg = <5>;
+				label = "lan1";
+				phy-mode = "internal";
+				phy-handle = <&internal_phy2>;
+			};
+
+			port@6 {
+				reg = <6>;
+				label = "lan2";
+				phy-mode = "internal";
+				phy-handle = <&internal_phy3>;
+			};
+
+			port@7 {
+				reg = <7>;
+				label = "lan3";
+				phy-mode = "internal";
+				phy-handle = <&internal_phy4>;
+			};
+		};
+
+		mdio {
+			internal_phy1: phy@4 {
+				compatible = "ethernet-phy-ieee802.3-c45";
+				reg = <4>;
+			};
+
+			internal_phy2: phy@5 {
+				compatible = "ethernet-phy-ieee802.3-c45";
+				reg = <5>;
+			};
+
+			internal_phy3: phy@6 {
+				compatible = "ethernet-phy-ieee802.3-c45";
+				reg = <6>;
+			};
+
+			internal_phy4: phy@7 {
+				compatible = "ethernet-phy-ieee802.3-c45";
+				reg = <7>;
+			};
+		};
+	};
+};
