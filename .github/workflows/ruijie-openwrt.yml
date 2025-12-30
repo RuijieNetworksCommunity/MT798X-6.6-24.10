@@ -377,6 +377,11 @@ jobs:
         echo "release_tag=R$(date +"%y.%-m.%-d.%H%M")-$SHORT_HASH-$BRANCH_NAME-lite" >> $GITHUB_OUTPUT
         touch release.txt
         {
+          echo "> [\!Warning]"
+          echo "> # Warning\!\!\!"
+          echo "> - DSA驱动固件对部分功能有一些问题, 比如 LACP链路聚合 会连不上"
+          echo "> - DSA驱动固件的配置文件和GSW固件不兼容"
+
           echo "## Changes:"
           echo ""
           git log -1 --pretty=format:"- %s (%h) by %an"
