@@ -6,6 +6,15 @@ on:
   pull_request:
     branches: [ "mt798x-mt799x-mtwifi_be72pro_be68u" ]
   workflow_dispatch:
+    inputs:
+      is_push_group_msg:
+        description: '是否推送群组消息'
+        required: true
+        default: 'yes'
+        type: choice
+        options:
+          - 'yes'
+          - 'no'
 
 env:
   UPLOAD_BIN_DIR: true
@@ -15,6 +24,7 @@ env:
 
 jobs:
   postmsg:
+    if: ${{ inputs.is_push_group_msg  == 'yes' }} || ${{ github.event_name != 'workflow_dispatch'}}
     name: Post Group Messages
     runs-on: ubuntu-22.04
     steps:
