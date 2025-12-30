@@ -64,6 +64,7 @@ jobs:
         retry-delay: 500
 
   cache-toolchain:
+    if: false
     name: Compile & Cache Toolchain
     runs-on: ubuntu-22.04
     steps:
@@ -193,7 +194,7 @@ jobs:
   mt7988-lite:
     name: MT7988 Lite Build
     runs-on: ubuntu-22.04
-    needs: [cache-toolchain]
+    # needs: [cache-toolchain]
     steps:
     - name: Initialization Environment
       id: env
