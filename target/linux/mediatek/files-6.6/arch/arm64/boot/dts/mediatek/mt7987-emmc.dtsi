@@ -20,14 +20,14 @@
 
 &mmc0 {
 	pinctrl-names = "default", "state_uhs";
-                        pinctrl-0 = <&mmc_pins_default>;
-                        pinctrl-1 = <&mmc_pins_uhs>;
-                        bus-width = <8>;
-                        max-frequency = <48000000>;
-                        cap-mmc-highspeed;
-                        vmmc-supply = <&reg_3p3v>;
-                        non-removable;
-                        status = "okay";
+	pinctrl-0 = <&mmc_pins_default>;
+	pinctrl-1 = <&mmc_pins_uhs>;
+	bus-width = <8>;
+	max-frequency = <48000000>;
+	cap-mmc-highspeed;
+	vmmc-supply = <&reg_3p3v>;
+	non-removable;
+	status = "okay";
 
 	card@0 {
 		compatible = "mmc-card";
@@ -56,10 +56,10 @@
 						};
 
 						macaddr_factory_2a: macaddr@2a {
-                                                        compatible = "mac-base";
-                                                        reg = <0x2a 0x6>;
-                                                        #nvmem-cell-cells = <1>;
-                                                };
+							compatible = "mac-base";
+							reg = <0x2a 0x6>;
+							#nvmem-cell-cells = <1>;
+						};
 					};
 				};
 			};

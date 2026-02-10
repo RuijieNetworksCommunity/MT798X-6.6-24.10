@@ -59,23 +59,21 @@
 		#reset-cells = <1>;
 		#address-cells = <1>;
 		#size-cells = <0>;
-		status = "disabled";
+		status = "okay";
 
 		gmac0: mac@0 {
 			compatible = "mediatek,eth-mac";
 			reg = <0>;
 			pcs-handle = <&sgmiipcs0>;
-			phy-mode = "2500base-x";
-                        phy-handle = <&phy1>;
-                        status = "okay";
+			status = "disabled";
 		};
 
 		gmac1: mac@1 {
 			compatible = "mediatek,eth-mac";
 			reg = <1>;
 			phy-mode = "internal";
-                        phy-handle = <&phy15>;
-                        status = "okay";
+			phy-handle = <&int_2p5g_phy>;
+			status = "disabled";
 		};
 
 		gmac2: mac@2 {
@@ -91,24 +89,13 @@
 		};
 
 		mdio: mdio-bus {
-			phy1: phy@1 {
-                                compatible = "ethernet-phy-ieee802.3-c45";
-                                reg = <1>;
-                                reset-assert-us = <100000>;
-                                reset-deassert-us = <100000>;
-                                reset-gpios = <&pio 42 GPIO_ACTIVE_LOW>;
-                                interrupts = <41 IRQ_TYPE_LEVEL_LOW>;
-                                interrupt-parent = <&pio>;
-                                realtek,aldps-enable;
-                        };
-
-			phy15: phy@15 {
-                                pinctrl-names = "i2p5gbe-led";
-                                pinctrl-0 = <&i2p5gbe_led0_pins>;
-                                compatible = "ethernet-phy-ieee802.3-c45";
-                                reg = <15>;
-                                phy-mode = "internal";
-                        };
+			int_2p5g_phy: phy@15 {
+				pinctrl-names = "i2p5gbe-led";
+				pinctrl-0 = <&i2p5gbe_led0_pins>;
+				compatible = "ethernet-phy-ieee802.3-c45";
+				reg = <15>;
+				phy-mode = "internal";
+			};
 
 		};
 	};
@@ -136,10 +123,6 @@
 };
 
 &crypto {
-	status = "okay";
-};
-
-&eth {
 	status = "okay";
 };
 
