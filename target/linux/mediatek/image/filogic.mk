@@ -455,7 +455,7 @@ define Device/hiveton-h5000m
   DEVICE_VENDOR := Hiveton
   DEVICE_MODEL := H5000M
   DEVICE_DTS := mt7987a-hiveton-h5000m
-  DEVICE_DTS_DIR := $(DTS_DIR)/
+  DEVICE_DTS_DIR := ../dts
   KERNEL_LOADADDR := 0x40080000
   DEVICE_PACKAGES := mt798x-2p5g-phy-firmware-internal kmod-sfp blkid
   SUPPORTED_DEVICES += hiveton,h5000m
