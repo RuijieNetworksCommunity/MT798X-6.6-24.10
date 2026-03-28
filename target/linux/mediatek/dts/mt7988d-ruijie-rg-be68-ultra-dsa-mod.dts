@@ -17,6 +17,8 @@
 };
 
 &mdio_bus {
+	/delete-node/ rtl837x-gsw@1;
+
 	switch1: switch@1d {
 		compatible = "realtek,rtl8372n";
 		reg = <29>;
