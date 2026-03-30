@@ -21,7 +21,8 @@ env:
 
 jobs:
   postmsg:
-    if: ${{ inputs.is_push_group_msg  == 'yes' || github.event_name != 'workflow_dispatch'}}
+    # if: ${{ inputs.is_push_group_msg  == 'yes' || github.event_name != 'workflow_dispatch'}}
+    if: false
     name: Post Group Messages
     runs-on: ubuntu-22.04
     steps:
