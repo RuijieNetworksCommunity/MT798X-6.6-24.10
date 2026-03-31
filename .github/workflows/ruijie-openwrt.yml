@@ -24,8 +24,7 @@ env:
 
 jobs:
   postmsg:
-    # if: ${{ inputs.is_push_group_msg  == 'yes' || github.event_name != 'workflow_dispatch'}}
-    if: false
+    if: ${{ inputs.is_push_group_msg  == 'yes' || github.event_name != 'workflow_dispatch'}}
     name: Post Group Messages
     runs-on: ubuntu-22.04
     steps:
@@ -42,9 +41,9 @@ jobs:
 
     - name: Send Messages
       id: request
-      uses: tyrrrz/action-http-request@master
+      uses: tyrrrz/action-http-request@prime
       with:
-        url: https://api.emtips.net/qqbot/send_group_msg
+        url: https://api.1tip.cc:8000/qqbot/send_group_msg
         method: POST
         headers: |
           Content-Type: application/json
