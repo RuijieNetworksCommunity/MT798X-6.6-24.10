@@ -144,6 +144,10 @@ jobs:
       run: |
         git clone git@github.com:RuijieNetworksCommunity/rtl837x-dsa-driver.git package/rtl837x-dsa-driver
 
+    - name: Clone rtl8261-phy-driver driver
+      run: |
+        git clone https://github.com/RuijieNetworksCommunity/rtl8261-phy-driver.git package/rtl8261-phy-driver
+
     - name: Cache DL
       uses: actions/cache@v4
       with:
