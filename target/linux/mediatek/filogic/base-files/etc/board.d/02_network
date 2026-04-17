@@ -344,12 +344,10 @@ mediatek_setup_macs()
     hiveton,h5000m)
 		lan_mac=$(macaddr_generate_from_mmc_cid mmcblk0)
 		wan_mac=$(macaddr_add "$lan_mac" 1)
-	wifi_mac=$(macaddr_add "$lan_mac" 2)
-	sed -i '/MacAddress=$wifi_mac/d' /etc/wireless/mediatek/mt7992.b0.dat
-        echo "MacAddress=$wifi_mac" >> /etc/wireless/mediatek/mt7992.b0.dat
-	wifi_mac="$(macaddr_add $wifi_mac 1)"
-        sed -i '/MacAddress=$wifi_mac/d' /etc/wireless/mediatek/mt7992.b1.dat
-	echo "MacAddress=$wifi_mac" >> /etc/wireless/mediatek/mt7992.b1.dat
+		wifi_mac=$(macaddr_add "$lan_mac" 2)
+        echo "MacAddress_Default=$wifi_mac" >> /etc/wireless/mediatek/mt7992.b0.dat
+		wifi_mac="$(macaddr_add $wifi_mac 1)"
+		echo "MacAddress_Default=$wifi_mac" >> /etc/wireless/mediatek/mt7992.b1.dat
 		;;
 	mercusys,mr90x-v1|\
 	tplink,re6000xd)
@@ -379,11 +377,11 @@ mediatek_setup_macs()
 		local b1dat="$(l1dat if2dat rai0)"
 		if [ -f ${b0dat} ] && ! grep -q "MacAddress=" ${b0dat}; then
 			local b0mac="$(macaddr_add $label_mac 2)"
-			echo "MacAddress=$b0mac" >> ${b0dat}
+			echo "MacAddress_Default=$b0mac" >> ${b0dat}
 		fi
 		if [ -f ${b1dat} ] && ! grep -q "MacAddress=" ${b1dat}; then
 			local b1mac="$(macaddr_add $label_mac 3)"
-			echo "MacAddress=$b1mac" >> ${b1dat}
+			echo "MacAddress_Default=$b1mac" >> ${b1dat}
 		fi
 		;;
 	xiaomi,mi-router-ax3000t|\

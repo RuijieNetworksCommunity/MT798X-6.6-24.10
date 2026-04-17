@@ -409,12 +409,12 @@ function mtwifi_cfg_setup(argv)
     local WirelessMode
 
     if cfg.config.band == "2g" then
-    WirelessMode = 9  -- PHY_11BGN_MIXED
-    if is_ax_mode(cfg) then
-        WirelessMode = 16  -- PHY_11AX_24G
-    elseif is_be_mode(cfg) then
-        WirelessMode = 22 -- PHY_11BE_24G
-    end
+        WirelessMode = 9  -- PHY_11BGN_MIXED
+        if is_ax_mode(cfg) then
+            WirelessMode = 16  -- PHY_11AX_24G
+        elseif is_be_mode(cfg) then
+            WirelessMode = 22 -- PHY_11BE_24G
+        end
     elseif cfg.config.band == "5g" then
         WirelessMode = 15 -- PHY_11VHT_N_MIXED
         if is_ax_mode(cfg) then
@@ -484,7 +484,7 @@ function mtwifi_cfg_setup(argv)
             dats.ApCliSsid = v.config.ssid or ""
             dats.ApCliBssid = v.config.bssid or ""
             dats.MACRepeaterEn = (v.config.bssid and v.config.bssid ~= "") and 1 or 0
-            dats.ApcliMacAddress = v.config.macaddr or ""
+            dats.ApcliMacAddress = v.config.macaddr or (dats.MacAddress_Default or "")
             dats.ApCliAuthMode = defs.enc2dat[v.config.encryption][1]
             dats.ApCliEncrypType = defs.enc2dat[v.config.encryption][2]
             dats.ApCliWPAPSK = v.config.key or ""
@@ -601,9 +601,9 @@ function mtwifi_cfg_setup(argv)
             if not v.config.mlo then
                 set_dat(dats, apidx, "MldGroup", "0")
                 if idx == 0 then
-                    dats.MacAddress = v.config.macaddr or ""
+                    dats.MacAddress = v.config.macaddr or (dats.MacAddress_Default or "")
                 else
-                    set_idx_dat(dats, apidx, "MacAddress", v.config.macaddr or "")
+                    set_idx_dat(dats, apidx, "MacAddress", v.config.macaddr or (dats.MacAddress_Default or ""))
                 end
             else
                 set_dat(dats, apidx, "MldGroup", "1")
