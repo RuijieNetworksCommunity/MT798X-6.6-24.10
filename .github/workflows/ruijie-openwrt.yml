@@ -246,11 +246,12 @@ jobs:
 
         rm -rf artifacts/mt7988/packages
 
-        find artifacts/mt7988/targets/mediatek/filogic/ -type f ! -name "*.bin" -delete
+        find artifacts/mt7988/targets/mediatek/filogic/ -type f ! \( -name "*.bin" -o -name "*.itb" \) -delete
         find artifacts/mt7988/targets/mediatek/filogic/ -type f -name "*-bl2.bin" -delete
         find artifacts/mt7988/targets/mediatek/filogic/ -mindepth 1 -type d -exec rm -rf {} +
 
-        cp -r artifacts/mt7988/targets/mediatek/filogic/*.bin release/
+        cp artifacts/mt7988/targets/mediatek/filogic/*.bin release/
+        cp artifacts/mt7988/targets/mediatek/filogic/*.itb release/
 
         cd release
 
