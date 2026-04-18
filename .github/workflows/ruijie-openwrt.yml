@@ -167,6 +167,10 @@ jobs:
       with:
         mixkey: ${{ hashFiles('.github/workflows/cache-control') }}
 
+    - name: Remove go-mod-cache
+      run: |
+        [ -e dl/go-mod-cache ] && rm -r -f dl/go-mod-cache || true
+
     - name: Update Feeds
       if: (!cancelled())
       id: update-feeds
