@@ -239,6 +239,7 @@ mediatek_setup_interfaces()
 	mediatek,mt7988a-mxl86252-rfb*)
 		ucidef_set_interfaces_lan_wan "mxl_lan0 mxl_lan1 mxl_lan2 mxl_lan3 lan2 lan3" eth1
 		;;
+	hiveton,e87n|\
 	hiveton,h5000m|\
 	mediatek,mt7987*)
 		ucidef_set_interfaces_lan_wan "eth0 hnat" eth1
@@ -346,6 +347,7 @@ mediatek_setup_macs()
 		lan_mac=$(mtd_get_mac_binary "Factory" "0xFFFF4")
 		wan_mac=$(mtd_get_mac_binary "Factory" "0xFFFFA")
 		;;
+	hiveton,e87n|\
     hiveton,h5000m)
 		lan_mac=$(macaddr_generate_from_mmc_cid mmcblk0)
 		wan_mac=$(macaddr_add "$lan_mac" 1)

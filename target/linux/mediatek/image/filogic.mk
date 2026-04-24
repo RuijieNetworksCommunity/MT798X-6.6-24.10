@@ -463,6 +463,16 @@ define Device/hiveton-h5000m
 endef
 TARGET_DEVICES += hiveton-h5000m
 
+define Device/hiveton_e87n
+  DEVICE_VENDOR := Hiveton
+  DEVICE_MODEL := e87n(emmc)
+  DEVICE_DTS := mt7987a-hiveton-e87n
+  DEVICE_DTS_DIR := ../dts
+  KERNEL_LOADADDR := 0x40080000
+  DEVICE_PACKAGES := mt798x-2p5g-phy-firmware-internal kmod-fb-tft-nv3007 blkid e2fsprogs f2fsck mkf2fs
+  IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
+endef
+TARGET_DEVICES += hiveton_e87n
 
 define Device/bananapi_bpi-r4-lite
   DEVICE_VENDOR := Bananapi
