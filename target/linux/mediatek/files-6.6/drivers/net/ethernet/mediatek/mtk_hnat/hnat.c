@@ -62,111 +62,14 @@ static void hnat_sma_build_entry(struct timer_list *t)
 			     SMA, SMA_FWD_CPU_BUILD_ENTRY);
 }
 
-static int is_cah_ctrl_request_done(int ppe_id)
-{
-	int count = 1000;
-	/* waiting for 1sec to make sure action was finished */
-	do {
-		if (((readl(hnat_priv->ppe_base[ppe_id] + PPE_CAH_CTRL) >> 8) & 0x1) == 0)
-			return 1;
-		usleep_range(1000, 1100);
-	} while (--count);
-	return 0;
-}
-
-static void __hnat_write_cache_line(u32 ppe_id, u32 line, u32 tag, u32 state, u32 *data)
-{
-	int i;
-	if (ppe_id >= CFG_PPE_NUM || line >= MAX_PPE_CACHE_NUM) {
-		pr_warn("%s: invalid ppe_id or line %d_%d\n", __func__, ppe_id, line);
-		return;
-	}
-	if (state > 3) {
-		pr_warn("%s: invalid cache line state %d\n", __func__, state);
-		return;
-	}
-	if (data == NULL)
-		goto skip_data_write;
-	/* write data filed of the cache line */
-	for (i = 0; i < sizeof(struct foe_entry) / 4; i++) {
-		cr_set_field(hnat_priv->ppe_base[ppe_id] + PPE_CAH_LINE_RW, LINE_RW, line);
-#if defined(CONFIG_MEDIATEK_NETSYS_V3)
-		cr_set_field(hnat_priv->ppe_base[ppe_id] + PPE_CAH_LINE_RW, OFFSET_RW, i / 4);
-		cr_set_field(hnat_priv->ppe_base[ppe_id] + PPE_CAH_CTRL, CAH_DATA_SEL, i % 4);
-#else
-		cr_set_field(hnat_priv->ppe_base[ppe_id] + PPE_CAH_LINE_RW, OFFSET_RW, i);
-#endif
-		writel(data[i], hnat_priv->ppe_base[ppe_id] + PPE_CAH_WDATA);
-		/* software access cache command = write */
-		cr_set_field(hnat_priv->ppe_base[ppe_id] + PPE_CAH_CTRL, CAH_CMD, 3);
-		/* trigger software access cache request */
-		cr_set_field(hnat_priv->ppe_base[ppe_id] + PPE_CAH_CTRL, CAH_REQ, 1);
-		if (!is_cah_ctrl_request_done(ppe_id))
-			pr_warn("%s write data timeout in line %d_%d\n",
-				__func__, ppe_id, line);
-	}
-skip_data_write:
-	/* write tag filed of the cache line */
-	cr_set_field(hnat_priv->ppe_base[ppe_id] + PPE_CAH_LINE_RW, LINE_RW, line);
-	cr_set_field(hnat_priv->ppe_base[ppe_id] + PPE_CAH_LINE_RW, OFFSET_RW, 0x1F);
-	cr_set_field(hnat_priv->ppe_base[ppe_id] + PPE_CAH_CTRL, CAH_DATA_SEL, 0);
-	writel((state << 16) | tag, hnat_priv->ppe_base[ppe_id] + PPE_CAH_WDATA);
-	/* software access cache command = write */
-	cr_set_field(hnat_priv->ppe_base[ppe_id] + PPE_CAH_CTRL, CAH_CMD, 3);
-	/* trigger software access cache request */
-	cr_set_field(hnat_priv->ppe_base[ppe_id] + PPE_CAH_CTRL, CAH_REQ, 1);
-	if (!is_cah_ctrl_request_done(ppe_id))
-		pr_warn("%s write tag timeout in line %d_%d\n",
-			__func__, ppe_id, line);
-}
-
-void hnat_cache_clr(u32 ppe_id)
-{
-	u32 scan_mode;
-	u32 flow_cfg;
-	u32 cah_en;
-	if (ppe_id >= CFG_PPE_NUM)
-		return;
-	spin_lock_bh(&hnat_priv->cah_lock);
-	/* disable table learning */
-	flow_cfg = readl(hnat_priv->ppe_base[ppe_id] + PPE_FLOW_CFG);
-	writel(0, hnat_priv->ppe_base[ppe_id] + PPE_FLOW_CFG);
-	/* wait PPE return to idle */
-	udelay(1);
-	/* disable scan mode */
-	scan_mode = FIELD_GET(SCAN_MODE, readl(hnat_priv->ppe_base[ppe_id] + PPE_TB_CFG));
-	cr_set_field(hnat_priv->ppe_base[ppe_id] + PPE_TB_CFG, SCAN_MODE, 0);
-	/* disable cache */
-	cah_en = readl(hnat_priv->ppe_base[ppe_id] + PPE_CAH_CTRL) & CAH_EN;
-	cr_set_field(hnat_priv->ppe_base[ppe_id] + PPE_CAH_CTRL, CAH_EN, 0);
-	/* invalidate PPE cache lines */
-	cr_set_field(hnat_priv->ppe_base[ppe_id] + PPE_CAH_CTRL, CAH_X_MODE, 1);
-	cr_set_field(hnat_priv->ppe_base[ppe_id] + PPE_CAH_CTRL, CAH_X_MODE, 0);
-	/* lock the preserved cache line */
-	if (hnat_priv->data->version >= MTK_HNAT_V2)
-		__hnat_write_cache_line(ppe_id, 0, 0x7FFF, 3, NULL);
-	else
-		__hnat_write_cache_line(ppe_id, 0, 0x3FFF, 3, NULL);
-	/* restore cache enable */
-	cr_set_field(hnat_priv->ppe_base[ppe_id] + PPE_CAH_CTRL, CAH_EN, cah_en);
-	/* restore scan mode */
-	cr_set_field(hnat_priv->ppe_base[ppe_id] + PPE_TB_CFG, SCAN_MODE, scan_mode);
-	/* restore table learning */
-	writel(flow_cfg, hnat_priv->ppe_base[ppe_id] + PPE_FLOW_CFG);
-	spin_unlock_bh(&hnat_priv->cah_lock);
-	if (debug_level >= 2)
-		pr_info("%s: Clear cache of PPE%d\n", __func__, ppe_id);
-}
 void hnat_cache_ebl(int enable)
 {
 	int i;
 	for (i = 0; i < CFG_PPE_NUM; i++) {
-		if (enable)
-			hnat_cache_clr(i);
+		cr_set_field(hnat_priv->ppe_base[i] + PPE_CAH_CTRL, CAH_X_MODE, 1);
+		cr_set_field(hnat_priv->ppe_base[i] + PPE_CAH_CTRL, CAH_X_MODE, 0);
 		cr_set_field(hnat_priv->ppe_base[i] + PPE_CAH_CTRL, CAH_EN, enable);
 	}
-	if (debug_level >= 2)
-		pr_info("%s: %s cache of all PPE\n", __func__, (enable) ? "Enable" : "Disable");
 }
 EXPORT_SYMBOL(hnat_cache_ebl);
 
