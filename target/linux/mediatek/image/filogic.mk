@@ -469,7 +469,7 @@ define Device/hiveton_e87n
   DEVICE_DTS := mt7987a-hiveton-e87n
   DEVICE_DTS_DIR := ../dts
   KERNEL_LOADADDR := 0x40080000
-  DEVICE_PACKAGES := mt798x-2p5g-phy-firmware-internal kmod-fb-tft-nv3007 blkid e2fsprogs f2fsck mkf2fs
+  DEVICE_PACKAGES := mt798x-2p5g-phy-firmware-internal kmod-fb-tft-nv3007 kmod-backlight-pwm blkid e2fsprogs f2fsck mkf2fs
   IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
 endef
 TARGET_DEVICES += hiveton_e87n
