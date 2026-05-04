@@ -33,10 +33,12 @@
 #include "hw_ops.h"
 
 static const char bus_type_str[][8] = {
+	"wed",
 	"pci",
 	"axi",
 	"usb",
-	"sdio"
+	"sdio",
+	"npu"
 };
 
 static int
