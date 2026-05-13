@@ -1,0 +1,226 @@
+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+
+/dts-v1/;
+#include "mt7987a.dtsi"
+#include <dt-bindings/input/input.h>
+
+/ {
+	model = "Hiveton h87pro EVB";
+	compatible = "hiveton,h87pro-evb", "mediatek,mt7987";
+
+	aliases {
+		serial0 = &uart0;
+	};
+
+	chosen: chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	gpio-keys {
+		compatible = "gpio-keys";
+
+		reset {
+			label = "reset";
+			linux,code = <KEY_RESTART>;
+			gpios = <&pio 1 GPIO_ACTIVE_LOW>;
+			debounce-interval = <10>;
+		};
+
+		wps {
+			label = "wps";
+			linux,code = <KEY_WPS_BUTTON>;
+			gpios = <&pio 0 GPIO_ACTIVE_LOW>;
+			debounce-interval = <10>;
+		};
+	};
+
+	leds {
+		compatible = "gpio-leds";
+
+		led-sys1 {
+			gpios = <&pio 4 GPIO_ACTIVE_LOW>;
+			color = <LED_COLOR_ID_BLUE>;
+			function = LED_FUNCTION_POWER;
+		};
+
+		led-sys2 {
+			gpios = <&pio 3 GPIO_ACTIVE_LOW>;
+			color = <LED_COLOR_ID_YELLOW>;
+			function = LED_FUNCTION_POWER;
+		};
+	};
+
+	reg_1p8v: regulator-1p8v {
+		compatible = "regulator-fixed";
+		regulator-name = "fixed-1.8V";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+		regulator-boot-on;
+		regulator-always-on;
+	};
+
+	reg_3p3v: regulator-3p3v {
+		compatible = "regulator-fixed";
+		regulator-name = "fixed-3.3V";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-boot-on;
+		regulator-always-on;
+	};
+
+	i2c_rtk: i2c {
+		compatible = "i2c-gpio";
+		sda-gpios = <&rtk_gpio 39 GPIO_ACTIVE_HIGH>;
+		scl-gpios = <&rtk_gpio 40 GPIO_ACTIVE_HIGH>;
+		i2c-gpio,delay-us = <5>;
+		i2c-gpio,timeout-ms = <1>;
+	};
+
+	sfp0: sfp {
+		compatible = "sff,sfp";
+
+		i2c-bus = <&i2c_rtk>;
+		mod-def0-gpios = <&rtk_gpio 38 GPIO_ACTIVE_LOW>;
+		maximum-power-milliwatt = <1000>;
+	};
+};
+
+&fan {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pwm_fan_pins>;
+	compatible = "pwm-fan";
+	#cooling-cells = <2>;
+	cooling-levels = <0 10 20 30 40 50 60 70 80 90 100 110 120 130 140 150 160 170 180 190 200 210 220 240 255>;
+	pwms = <&pwm 1 50000 0>;
+	status = "okay";
+};
+
+&gmac0 {
+	phy-mode = "2500base-x";
+	status = "okay";
+	fixed-link {
+		speed = <2500>;
+		full-duplex;
+		pause;
+		asym-pause;
+	};
+};
+
+&gmac1 {
+	status = "okay";
+};
+
+/*
+&mdio {
+	rtk_gpio: switch0: switch@1d {
+		compatible = "realtek,rtl8372n";
+		reg = <29>;
+		reset-gpios = <&pio 42 GPIO_ACTIVE_HIGH>;
+		
+		sds0-rx-swap;
+		sds1-rx-swap;
+		phy-mdi-reverse;
+		phy-tx-polarity-swap;
+
+		gpio-controller;
+		#gpio-cells = <2>;
+
+		ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+			port@3 {
+				reg = <3>;
+				label = "cpu";
+				ethernet = <&gmac0>;
+				phy-mode = "2500base-x";
+
+				fixed-link {
+					speed = <10000>;
+					full-duplex;
+					pause;
+					asym-pause;
+				};
+			};
+
+			port@4 {
+				reg = <4>;
+				label = "lan1";
+				phy-mode = "internal";
+				phy-handle = <&internal_phy1>;
+			};
+
+			port@5 {
+				reg = <5>;
+				label = "lan2";
+				phy-mode = "internal";
+				phy-handle = <&internal_phy2>;
+			};
+
+			port@6 {
+				reg = <6>;
+				label = "lan3";
+				phy-mode = "internal";
+				phy-handle = <&internal_phy3>;
+			};
+
+			port@7 {
+				reg = <7>;
+				label = "lan4";
+				phy-mode = "internal";
+				phy-handle = <&internal_phy4>;
+			};
+
+			port@8 {
+				reg = <8>;
+				label = "lan5";
+				sfp = <&sfp0>;
+				phy-mode = "10gbase-r";
+				managed = "in-band-status";
+			};
+		};
+
+		mdio {
+			internal_phy1: phy@4 {
+				compatible = "ethernet-phy-ieee802.3-c45";
+				reg = <4>;
+			};
+
+			internal_phy2: phy@5 {
+				compatible = "ethernet-phy-ieee802.3-c45";
+				reg = <5>;
+			};
+
+			internal_phy3: phy@6 {
+				compatible = "ethernet-phy-ieee802.3-c45";
+				reg = <6>;
+			};
+
+			internal_phy4: phy@7 {
+				compatible = "ethernet-phy-ieee802.3-c45";
+				reg = <7>;
+			};
+		};
+	};
+};
+*/
+
+&mdio {
+	rtk_gpio: rtl837x-gsw@1 {
+		compatible = "realtek,rtl837x";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		reg = <29>;
+		reset-gpios = <&pio 42 GPIO_ACTIVE_HIGH>;
+		rtl837x,cpu-port = <0>;
+		rtl837x,sds0mode = "2500base-x";
+		ethernet = <&gmac0>;
+		sfp = <&sfp0>;
+		sds0-rx-swap;
+		sds1-rx-swap;
+		phy-mdi-reverse;
+		phy-tx-polarity-swap;
+		gpio-controller;
+		#gpio-cells = <2>;
+	};
+};

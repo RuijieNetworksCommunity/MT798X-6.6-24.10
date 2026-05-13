@@ -2088,3 +2088,25 @@ define Device/tplink_tl-7dr7299-v1
 	fit gzip $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb external-with-rootfs | append-metadata
 endef
 TARGET_DEVICES += tplink_tl-7dr7299-v1
+
+define Device/hiveton_h87pro-evb-nand
+  DEVICE_VENDOR := Hiveton
+  DEVICE_MODEL := h87pro EVB board(nand)
+  DEVICE_DTS := mt7987a-hiveton-h87pro-evb-nand
+  DEVICE_DTS_DIR := ../dts
+  KERNEL_LOADADDR := 0x40080000
+  DEVICE_PACKAGES := mt798x-2p5g-phy-firmware-internal swconfig kmod-rtl837x_gsw kmod-sfp blkid
+  IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
+endef
+TARGET_DEVICES += hiveton_h87pro-evb-nand
+
+define Device/hiveton_h87pro-evb-emmc
+  DEVICE_VENDOR := Hiveton
+  DEVICE_MODEL := h87pro EVB board(emmc)
+  DEVICE_DTS := mt7987a-hiveton-h87pro-evb-emmc
+  DEVICE_DTS_DIR := ../dts
+  KERNEL_LOADADDR := 0x40080000
+  DEVICE_PACKAGES := mt798x-2p5g-phy-firmware-internal swconfig kmod-rtl837x_gsw kmod-sfp blkid e2fsprogs f2fsck mkf2fs 
+  IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
+endef
+TARGET_DEVICES += hiveton_h87pro-evb-emmc
