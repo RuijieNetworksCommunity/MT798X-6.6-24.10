@@ -2110,3 +2110,13 @@ define Device/hiveton_h87pro-evb-emmc
   IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
 endef
 TARGET_DEVICES += hiveton_h87pro-evb-emmc
+
+define Device/hiveton_h87pro
+  DEVICE_VENDOR := Hiveton
+  DEVICE_MODEL := h87pro
+  DEVICE_DTS := mt7987a-hiveton-h87pro
+  DEVICE_DTS_DIR := ../dts
+  DEVICE_PACKAGES := mt798x-2p5g-phy-firmware-internal swconfig kmod-rtl837x_gsw kmod-sfp blkid
+  IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
+endef
+TARGET_DEVICES += hiveton_h87pro

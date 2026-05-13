@@ -132,6 +132,7 @@ platform_do_upgrade() {
 	glinet,gl-xe3000|\
 	hiveton,e87n|\
 	hiveton,h5000m|\
+	hiveton,h87pro|\
 	hiveton,h87pro-evb-emmc|\
 	huasifei,wh3000|\
 	mediatek,mt7987a|\
@@ -223,6 +224,7 @@ platform_check_image() {
 	bananapi,bpi-r4-poe|\
 	hiveton,e87n|\
 	hiveton,h5000m|\
+	hiveton,h87pro|\
 	hiveton,h87pro-evb-emmc|\
 	tplink,tl-7dr7230-rev1.0-sp2|\
 	cmcc,rax3000m)
@@ -268,6 +270,7 @@ platform_copy_config() {
 	glinet,gl-xe3000|\
 	hiveton,e87n|\
 	hiveton,h5000m|\
+	hiveton,h87pro|\
 	hiveton,h87pro-evb-emmc|\
 	huasifei,wh3000|\
 	mediatek,mt7987a|\
