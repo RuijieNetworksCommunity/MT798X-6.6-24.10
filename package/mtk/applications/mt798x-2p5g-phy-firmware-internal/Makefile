@@ -12,7 +12,7 @@ define KernelPackage/mt798x-2p5g-phy
   SUBMENU:=Network Devices
   TITLE:=MediaTek MT798x 2.5G PHY driver
   DEPENDS:=@TARGET_mediatek +mt798x-2p5g-phy-firmware-internal
-  KCONFIG:=CONFIG_MEDIATEK_2P5GE_PHY=m
+  KCONFIG:=CONFIG_MEDIATEK_2P5GE_PHY=y
   FILES:=$(LINUX_DIR)/drivers/net/phy/mediatek/mtk-2p5ge.ko
   AUTOLOAD:=$(call AutoLoad,73,mtk-2p5ge)
 endef
@@ -38,13 +38,14 @@ define Package/mt798x-2p5g-phy-firmware-internal/description
 endef
 
 define Package/mt798x-2p5g-phy-firmware-internal/install
-	$(INSTALL_DIR) $(1)/lib/firmware/mediatek/mt7988
-	$(INSTALL_DIR) $(1)/lib/firmware/mediatek/mt7987
-
-	cp ./files/mt7988/i2p5ge-phy-pmb.bin  $(1)/lib/firmware/mediatek/mt7988/i2p5ge-phy-pmb.bin
-
-	cp ./files/mt7987/i2p5ge-phy-pmb.bin  $(1)/lib/firmware/mediatek/mt7987/i2p5ge-phy-pmb.bin
-	cp ./files/mt7987/i2p5ge-phy-DSPBitTb.bin  $(1)/lib/firmware/mediatek/mt7987/i2p5ge-phy-DSPBitTb.bin
+	if [ "$(CONFIG_WARP_CHIPSET)" = "mt7987" ]; then \
+		$(INSTALL_DIR) $(1)/lib/firmware/mediatek/mt7987; \
+		cp ./files/mt7987/i2p5ge-phy-pmb.bin $(1)/lib/firmware/mediatek/mt7987/; \
+		cp ./files/mt7987/i2p5ge-phy-DSPBitTb.bin $(1)/lib/firmware/mediatek/mt7987/; \
+	elif [ "$(CONFIG_WARP_CHIPSET)" = "mt7988" ]; then \
+		$(INSTALL_DIR) $(1)/lib/firmware/mediatek/mt7988; \
+		cp ./files/mt7988/i2p5ge-phy-pmb.bin $(1)/lib/firmware/mediatek/mt7988/; \
+	fi
 endef
 
 $(eval $(call BuildPackage,mt798x-2p5g-phy-firmware-internal))
