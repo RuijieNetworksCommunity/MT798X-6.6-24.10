@@ -83,6 +83,11 @@
 	};
 };
 
+&pcie0 {
+	wifi-reset-gpios = <&pio 38 GPIO_ACTIVE_HIGH>;
+	wifi-reset-msleep = <1000>;
+};
+
 &fan {
 	pinctrl-names = "default";
         pinctrl-0 = <&pwm_fan_pins>;

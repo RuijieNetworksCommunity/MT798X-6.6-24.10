@@ -87,6 +87,14 @@
 	};
 };
 
+&pcie0 {
+	status = "okay";
+};
+
+&pcie1 {
+	status = "okay";
+};
+
 &fan {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pwm_fan_pins>;
