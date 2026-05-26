@@ -298,6 +298,9 @@ mediatek_setup_interfaces()
 			"1:lan:3" "2:lan:4" "3:lan:5" "4:lan:6" "5:lan:7"  "0t@eth2"
 		ucidef_set_interfaces_lan_wan "lan1 lan2 eth2.1" "eth1"
 		;;
+	tplink,tl-7dr7299-v1-dsa)
+		ucidef_set_interfaces_lan_wan "lan1 lan2 lan3 lan4 lan5 lan6 lan7" "eth1"
+		;;
 	tplink,tl-xdr6086|\
 	wavlink,wl-wn586x3)
 		ucidef_set_interfaces_lan_wan "lan1 lan2" eth1
@@ -398,7 +401,8 @@ mediatek_setup_macs()
 			echo "MacAddress_Default=$b1mac" >> ${b1dat}
 		fi
 		;;
-	tplink,tl-7dr7299-v1)
+	tplink,tl-7dr7299-v1|\
+	tplink,tl-7dr7299-v1-dsa)
 		label_mac=$(get_mac_label)
 		local b0dat="$(l1dat if2dat ra0)"
 		local b1dat="$(l1dat if2dat rai0)"

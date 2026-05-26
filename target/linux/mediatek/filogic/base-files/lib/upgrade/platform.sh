@@ -116,6 +116,7 @@ platform_do_upgrade() {
 	tplink,tl-xtr8488|\
 	tplink,tl-7dr7230-rev1.0-sp2|\
 	tplink,tl-7dr7299-v1|\
+	tplink,tl-7dr7299-v1-dsa|\
 	xiaomi,mi-router-ax3000t-ubootmod|\
 	xiaomi,redmi-router-ax6000-ubootmod|\
 	xiaomi,mi-router-wr30u-ubootmod|\
