@@ -8,8 +8,8 @@ msgstr "10秒"
 
 #: htdocs/luci-static/resources/view/wrtbwmon/details.js:177
 #: htdocs/luci-static/resources/view/wrtbwmon/details.js:609
-msgid "3 seconds"
-msgstr "3秒"
+msgid "2 seconds"
+msgstr "2秒"
 
 #: htdocs/luci-static/resources/view/wrtbwmon/details.js:177
 #: htdocs/luci-static/resources/view/wrtbwmon/details.js:612

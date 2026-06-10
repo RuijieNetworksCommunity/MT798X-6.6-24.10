@@ -46,7 +46,6 @@ mediatek_get_switch_type()
 {
     # Base paths to the compatible and status properties
     local dsa_base_path="/proc/device-tree/soc_netsys/ethernet@15100000/mdio-bus/*/"
-    local mt7531_dsa_base_path="/proc/device-tree/soc/switch*/"
     local gsw_base_path="/proc/device-tree/gsw*/"
 
     local dts_is_dsa=0
@@ -81,17 +80,6 @@ mediatek_get_switch_type()
             fi
 
             if [ "$compatible" = "mediatek,mt7531" ] && [ "$status" = "okay" ]; then
-                dts_is_dsa=1
-            fi
-        fi
-    done
-
-    # Iterate over each compatible property for built-in mt7531-dsa
-    for dir in $mt7531_dsa_base_path; do
-        if [ -d "$dir" ]; then
-            read compatible status < <(check_compatible_status "$dir")
-
-            if [ "$compatible" = "mediatek,mt7988-switch" ] && [ "$status" = "okay" ]; then
                 dts_is_dsa=1
             fi
         fi

@@ -468,7 +468,7 @@ int air_get_autonego(struct phy_device *phydev, int *an)
 	return 0;
 }
 
-static int air_read_status(struct phy_device *phydev)
+static int __maybe_unused air_read_status(struct phy_device *phydev)
 {
 	int ret = 0, reg = 0, an = AUTONEG_DISABLE, bmcr = 0;
 	u32 pbus_value = 0;

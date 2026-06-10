@@ -14,6 +14,7 @@
 #include <linux/netfilter_bridge.h>
 #include <linux/netfilter_ipv6.h>
 #include <linux/of.h>
+#include <linux/stddef.h>
 #include <net/arp.h>
 #include <net/neighbour.h>
 #include <net/netfilter/nf_conntrack_helper.h>
@@ -1529,6 +1530,15 @@ static struct ethhdr *get_ipv6_ipip_ethhdr(struct sk_buff *skb,
 	return eth;
 }
 
+static inline void hnat_copy_foe_info(struct foe_entry *dst,
+			       const struct foe_entry *src)
+{
+	size_t offset = offsetof(struct foe_entry, ipv6_hnapt.ipv6_sip0);
+
+	memcpy((u8 *)dst + offset, (const u8 *)src + offset,
+	       sizeof(*dst) - offset);
+}
+
 static unsigned int skb_to_hnat_info(struct sk_buff *skb,
 				     const struct net_device *dev,
 				     struct foe_entry *foe,
@@ -2209,10 +2219,7 @@ static unsigned int skb_to_hnat_info(struct sk_buff *skb,
 	/* Before entry enter BIND state, write other fields first,
 	 * prevent racing with hardware accesses.
 	 */
-	struct hnat_bind_info_blk bfib1_tmp = foe->ipv6_hnapt.bfib1;
-	memcpy(&foe->ipv6_hnapt, &entry.ipv6_hnapt,
-       sizeof(entry.ipv6_hnapt));
-	foe->ipv6_hnapt.bfib1 = bfib1_tmp;
+	hnat_copy_foe_info(foe, &entry);
 	/* We must ensure all info has been updated before set to hw */
 	wmb();
 	/* After other fields have been written, write info1 to BIND the entry */
@@ -2492,10 +2499,7 @@ int mtk_sw_nat_hook_tx(struct sk_buff *skb, int gmac_no)
 	/* Before entry enter BIND state, write other fields first,
 	 * prevent racing with hardware accesses.
 	*/
-	struct hnat_bind_info_blk bfib1_tmp = hw_entry->ipv6_hnapt.bfib1;
-	memcpy(&hw_entry->ipv6_hnapt, &entry.ipv6_hnapt,
-       sizeof(entry.ipv6_hnapt));
-	hw_entry->ipv6_hnapt.bfib1 = bfib1_tmp;
+	hnat_copy_foe_info(hw_entry, &entry);
 	/* We must ensure all info has been updated before set to hw */
 	wmb();
 	/* After other fields have been writtefn, write info1 to BIND the entry */
