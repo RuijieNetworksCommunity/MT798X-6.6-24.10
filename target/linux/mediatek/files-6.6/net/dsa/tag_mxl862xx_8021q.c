@@ -1,59 +1,42 @@
-// SPDX-License-Identifier: GPL-2.0+
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*
- * net/dsa/tag_mxl862xx_8021q.c - DSA driver 802.1q based Special Tag support for MaxLinear 862xx switch chips
+ * DSA 802.1Q-based tag driver for MaxLinear MxL862xx switches
  *
- * Copyright (C) 2024 MaxLinear Inc.
+ * Uses the DSA tag_8021q framework to encode port information in
+ * 802.1Q VLAN tags instead of the native 8-byte MxL862xx special tag.
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *
+ * Copyright (C) 2025 Daniel Golle <daniel@makrotopia.org>
  */
 
 #include <linux/dsa/8021q.h>
-#include "tag_8021q.h"
+
 #include "tag.h"
+#include "tag_8021q.h"
 
-#define MXL862_NAME	"mxl862xx"
+#define MXL862_8021Q_NAME "mxl862xx-8021q"
 
-/* To define the outgoing port and to discover the incoming port
- * a special 4-byte outer VLAN tag is used by the MxL862xx.
- *
- *       Dest MAC       Src MAC    special   optional  EtherType
- *                                 outer     inner
- *                                 VLAN tag  tag(s)
- * ...| 1 2 3 4 5 6 | 1 2 3 4 5 6 | 1 2 3 4 | 1 2 3 4 | 1 2 |...
- *                                |<------->|
- */
-
-/* special tag in TX path header */
-static struct sk_buff *mxl862_8021q_tag_xmit(struct sk_buff *skb,
-				      struct net_device *dev)
+static struct sk_buff *mxl862_8021q_xmit(struct sk_buff *skb,
+					 struct net_device *netdev)
 {
-	struct dsa_port *dp = dsa_slave_to_port(dev);
+	struct dsa_port *dp = dsa_slave_to_port(netdev);
 	u16 tx_vid = dsa_tag_8021q_standalone_vid(dp);
-
 	u16 queue_mapping = skb_get_queue_mapping(skb);
-	u8 pcp = netdev_txq_to_tc(dev, queue_mapping);
+	u8 pcp = netdev_txq_to_tc(netdev, queue_mapping);
 
-	dsa_8021q_xmit(skb, dev, ETH_P_8021Q,
-			      ((pcp << VLAN_PRIO_SHIFT) | tx_vid));
+	/*
+	 * Re-key skb->queue_mapping to the DSA user port index so that
+	 * conduit drivers (e.g. mtk_eth_soc) can map it to a per-port
+	 * QDMA TX queue. Must happen after reading the original
+	 * queue_mapping for PCP derivation.
+	 */
+	skb_set_queue_mapping(skb, dp->index);
 
-	return skb;
+	return dsa_8021q_xmit(skb, netdev, ETH_P_8021Q,
+			      (pcp << VLAN_PRIO_SHIFT) | tx_vid);
 }
 
-static struct sk_buff *mxl862_8021q_tag_rcv(struct sk_buff *skb,
-				      struct net_device *dev)
+static struct sk_buff *mxl862_8021q_rcv(struct sk_buff *skb,
+					struct net_device *netdev)
 {
 	int src_port = -1;
 	int switch_id = -1;
@@ -62,14 +45,15 @@ static struct sk_buff *mxl862_8021q_tag_rcv(struct sk_buff *skb,
 	dsa_8021q_rcv(skb, &src_port, &switch_id, NULL);
 
 	if (src_port == -1 || switch_id == -1) {
-		dev_warn_ratelimited(&dev->dev, "Dropping packet due to invalid outer 802.1Q tag: switch %d port %d\n", switch_id, src_port);
+		net_warn_ratelimited("%s: Dropping packet due to invalid outer 802.1Q tag: switch %d port %d\n",
+					 netdev->name, switch_id, src_port);
 		return NULL;
 	}
 
-	skb->dev = dsa_master_find_slave(dev, switch_id, src_port);
-
+	skb->dev = dsa_master_find_slave(netdev, switch_id, src_port);
 	if (!skb->dev) {
-		dev_warn_ratelimited(&dev->dev, "Dropping packet due to invalid source port: %d\n", src_port);
+		net_warn_ratelimited("%s: Dropping packet due to invalid outer 802.1Q tag: switch %d port %d\n",
+					 netdev->name, switch_id, src_port);
 		return NULL;
 	}
 
@@ -79,16 +63,16 @@ static struct sk_buff *mxl862_8021q_tag_rcv(struct sk_buff *skb,
 }
 
 static const struct dsa_device_ops mxl862_8021q_netdev_ops = {
-	.name = "mxl862_8021q",
-	.proto = DSA_TAG_PROTO_MXL862_8021Q,
-	.xmit = mxl862_8021q_tag_xmit,
-	.rcv = mxl862_8021q_tag_rcv,
+	.name			= MXL862_8021Q_NAME,
+	.proto			= DSA_TAG_PROTO_MXL862_8021Q,
+	.xmit			= mxl862_8021q_xmit,
+	.rcv			= mxl862_8021q_rcv,
 	.needed_headroom	= VLAN_HLEN,
 	.promisc_on_master	= true,
 };
 
-
+MODULE_DESCRIPTION("DSA tag driver for MaxLinear MxL862xx switches, using VLAN");
 MODULE_LICENSE("GPL");
-MODULE_ALIAS_DSA_TAG_DRIVER(DSA_TAG_PROTO_MXL862_8021Q, MXL862_NAME);
+MODULE_ALIAS_DSA_TAG_DRIVER(DSA_TAG_PROTO_MXL862_8021Q, MXL862_8021Q_NAME);
 
 module_dsa_tag_driver(mxl862_8021q_netdev_ops);

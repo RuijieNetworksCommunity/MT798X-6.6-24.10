@@ -1,82 +1,59 @@
-// SPDX-License-Identifier: GPL-2.0+
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*
- * net/dsa/tag_mxl862xx.c - DSA driver Special Tag support for MaxLinear 862xx switch chips
+ * DSA Special Tag for MaxLinear 862xx switch chips
  *
+ * Copyright (C) 2025 Daniel Golle <daniel@makrotopia.org>
  * Copyright (C) 2024 MaxLinear Inc.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *
  */
 
 #include <linux/bitops.h>
 #include <linux/etherdevice.h>
 #include <linux/skbuff.h>
 #include <net/dsa.h>
-
 #include "tag.h"
 
 #define MXL862_NAME	"mxl862xx"
+#define ETH_P_MXLGSW	0x88C3		/* Infineon Technologies Corporate Research ST
+					 * Used by MaxLinear GSW DSA
+					 */
+#define MXL862_HEADER_LEN	8
 
-/* To define the outgoing port and to discover the incoming port a special
- * tag is used by the GSW1xx.
- *
- *       Dest MAC       Src MAC    special TAG        EtherType
- * ...| 1 2 3 4 5 6 | 1 2 3 4 5 6 | 1 2 3 4 5 6 7 8 | 1 2 |...
- *                                |<--------------->|
- */
+/* Word 0 -> EtherType */
 
-/* special tag in TX path header */
-#define MXL862_TX_HEADER_LEN 8
+/* Word 2 */
+#define MXL862_SUBIF_ID		GENMASK(4, 0)
 
-#define MXL862_RX_HEADER_LEN 8
-
-/* Byte 7 */
-#define MXL862_IGP_EGP_SHIFT 0
-#define MXL862_IGP_EGP_MASK GENMASK(3, 0)
+/* Word 3 */
+#define MXL862_IGP_EGP		GENMASK(3, 0)
 
 static struct sk_buff *mxl862_tag_xmit(struct sk_buff *skb,
 				       struct net_device *dev)
 {
 	struct dsa_port *dp = dsa_slave_to_port(dev);
-
 	struct dsa_port *cpu_dp = dp->cpu_dp;
-	unsigned int cpu_port = cpu_dp->index + 1;
-	unsigned int usr_port = dp->index + 1;
+	unsigned int cpu_port, sub_interface;
+	__be16 *mxl862_tag;
 
-	u8 *mxl862_tag;
+	cpu_port = cpu_dp->index;
 
-	if (skb == NULL)
-		return skb;
+	/* target port sub-interface ID relative to the CPU port */
+	sub_interface = dp->index + 16 - cpu_port;
 
-	/* provide additional space 'MXL862_TX_HEADER_LEN' bytes */
-	skb_push(skb, MXL862_TX_HEADER_LEN);
+	/* provide additional space 'MXL862_HEADER_LEN' bytes */
+	skb_push(skb, MXL862_HEADER_LEN);
 
-	/* shift MAC address to the beginnig of the enlarged buffer,
-	 * releasing the space required for DSA tag (between MAC address and Ethertype) */
-	memmove(skb->data, skb->data + MXL862_TX_HEADER_LEN, 2 * ETH_ALEN);
+	/* shift MAC address to the beginning of the enlarged buffer,
+	 * releasing the space required for DSA tag (between MAC address and
+	 * Ethertype)
+	 */
+	dsa_alloc_etype_header(skb, MXL862_HEADER_LEN);
 
-	/* special tag ingress */
-	mxl862_tag = skb->data + 2 * ETH_ALEN;
-	mxl862_tag[0] = 0x88;
-	mxl862_tag[1] = 0xc3;
-	mxl862_tag[2] = 0;
-	mxl862_tag[3] = 0;
-	mxl862_tag[4] = 0;
-	mxl862_tag[5] = usr_port + 16 - cpu_port;
-	mxl862_tag[6] = 0;
-	mxl862_tag[7] = (cpu_port)&MXL862_IGP_EGP_MASK;
+	/* special tag ingress (from the perspective of the switch) */
+	mxl862_tag = dsa_etype_header_pos_tx(skb);
+	mxl862_tag[0] = htons(ETH_P_MXLGSW);
+	mxl862_tag[1] = 0;
+	mxl862_tag[2] = htons(FIELD_PREP(MXL862_SUBIF_ID, sub_interface));
+	mxl862_tag[3] = htons(FIELD_PREP(MXL862_IGP_EGP, cpu_port));
 
 	return skb;
 }
@@ -84,70 +61,55 @@ static struct sk_buff *mxl862_tag_xmit(struct sk_buff *skb,
 static struct sk_buff *mxl862_tag_rcv(struct sk_buff *skb,
 				      struct net_device *dev)
 {
+	__be16 *mxl862_tag;
 	int port;
-	u8 *mxl862_tag;
 
-	if (unlikely(!pskb_may_pull(skb, MXL862_RX_HEADER_LEN))) {
-		dev_warn_ratelimited(&dev->dev,
-				     "Dropping packet, cannot pull SKB\n");
+	if (unlikely(!pskb_may_pull(skb, MXL862_HEADER_LEN))) {
+		dev_warn_ratelimited(&dev->dev, "Cannot pull SKB, packet dropped\n");
 		return NULL;
 	}
 
-	mxl862_tag = skb->data - 2;
+	mxl862_tag = dsa_etype_header_pos_rx(skb);
 
-	if ((mxl862_tag[0] != 0x88) && (mxl862_tag[1] != 0xc3)) {
-		dev_warn_ratelimited(
-			&dev->dev,
-			"Dropping packet due to invalid special tag marker\n");
-		dev_warn_ratelimited(
-			&dev->dev,
-			"Rx Packet Tag: 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x\n",
-			mxl862_tag[0], mxl862_tag[1], mxl862_tag[2],
-			mxl862_tag[3], mxl862_tag[4], mxl862_tag[5],
-			mxl862_tag[6], mxl862_tag[7]);
+	if (unlikely(mxl862_tag[0] != htons(ETH_P_MXLGSW))) {
+		dev_warn_ratelimited(&dev->dev,
+				     "Invalid special tag marker, packet dropped, tag: %8ph\n",
+				     mxl862_tag);
 		return NULL;
 	}
 
 	/* Get source port information */
-	port = (mxl862_tag[7] & MXL862_IGP_EGP_MASK) >> MXL862_IGP_EGP_SHIFT;
-	port = port - 1;
-
+	port = FIELD_GET(MXL862_IGP_EGP, ntohs(mxl862_tag[3]));
 	skb->dev = dsa_master_find_slave(dev, 0, port);
-
-	if (!skb->dev) {
-		dev_warn_ratelimited(
-			&dev->dev,
-			"Dropping packet due to invalid source port\n");
-		dev_warn_ratelimited(
-			&dev->dev,
-			"Rx Packet Tag: 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x\n",
-			mxl862_tag[0], mxl862_tag[1], mxl862_tag[2],
-			mxl862_tag[3], mxl862_tag[4], mxl862_tag[5],
-			mxl862_tag[6], mxl862_tag[7]);
+	if (unlikely(!skb->dev)) {
+		dev_warn_ratelimited(&dev->dev,
+				     "Invalid source port, packet dropped, tag: %8ph\n",
+				     mxl862_tag);
 		return NULL;
 	}
 
-	/* remove the MxL862xx special tag between the MAC addresses and the current ethertype field. */
-	skb_pull_rcsum(skb, MXL862_RX_HEADER_LEN);
-	memmove(skb->data - ETH_HLEN,
-		skb->data - (ETH_HLEN + MXL862_RX_HEADER_LEN), 2 * ETH_ALEN);
+	if (likely(!is_link_local_ether_addr(eth_hdr(skb)->h_dest)))
+		dsa_default_offload_fwd_mark(skb);
 
-	dsa_default_offload_fwd_mark(skb);
+	/* remove the MxL862xx special tag between the MAC addresses and the
+	 * current ethertype field.
+	 */
+	skb_pull_rcsum(skb, MXL862_HEADER_LEN);
+	dsa_strip_etype_header(skb, MXL862_HEADER_LEN);
 
 	return skb;
 }
 
 static const struct dsa_device_ops mxl862_netdev_ops = {
-	.name = "mxl862",
+	.name = MXL862_NAME,
 	.proto = DSA_TAG_PROTO_MXL862,
 	.xmit = mxl862_tag_xmit,
 	.rcv = mxl862_tag_rcv,
-	.needed_headroom = MXL862_RX_HEADER_LEN,
+	.needed_headroom = MXL862_HEADER_LEN,
 };
 
-MODULE_LICENSE("GPL");
 MODULE_ALIAS_DSA_TAG_DRIVER(DSA_TAG_PROTO_MXL862, MXL862_NAME);
+MODULE_DESCRIPTION("DSA tag driver for MaxLinear MxL862xx switches");
+MODULE_LICENSE("GPL");
 
 module_dsa_tag_driver(mxl862_netdev_ops);
-
-MODULE_LICENSE("GPL");
