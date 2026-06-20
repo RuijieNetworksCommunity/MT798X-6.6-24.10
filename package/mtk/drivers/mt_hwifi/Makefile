@@ -405,7 +405,7 @@ endif
 define Build/Compile
 	$(Build/Compile/mt7990)
 	$(Build/Compile/mt7992)
-	$(MAKE) $(PKG_JOBS) -C "$(LINUX_DIR)" V=1 \
+	+$(MAKE) $(PKG_JOBS) -C "$(LINUX_DIR)" V=1 \
 		$(KERNEL_MAKE_FLAGS) \
 		M="$(PKG_BUILD_DIR)/wlan_hwifi" \
 		LINUX_DIR="$(KERNEL_BUILD_DIR)" \
