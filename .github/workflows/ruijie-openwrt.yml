@@ -128,7 +128,7 @@ jobs:
         fetch-depth: 0
 
     - name: Add SSH Private key RTL837X_DRIVER
-      uses: webfactory/ssh-agent@v0.9.0
+      uses: webfactory/ssh-agent@v0.10.0
       with:
         ssh-private-key: |
           ${{ secrets.SSH_PRIVATE_KEY_RTL837X_DRIVER }}
@@ -138,7 +138,7 @@ jobs:
         git clone git@github.com:RuijieNetworksCommunity/rtl837x-gsw-driver.git package/rtl837x-gsw-driver
 
     - name: Add SSH Private key RTL8372N_DSA_DRIVER
-      uses: webfactory/ssh-agent@v0.9.0
+      uses: webfactory/ssh-agent@v0.10.0
       with:
         ssh-private-key: |
           ${{ secrets.SSH_PRIVATE_KEY_RTL8372N_DSA_DRIVER }}
@@ -152,13 +152,13 @@ jobs:
         git clone https://github.com/RuijieNetworksCommunity/rtl8261-phy-driver.git package/rtl8261-phy-driver
 
     - name: Cache DL
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: dl
         key: mt798x-dl-${{ runner.os }}-${{ hashFiles('feeds.conf.default') }}-${{ hashFiles('.github/workflows/cache-control') }}
 
     - name: Cache Feeds
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: feeds
         key: mt798x-feeds-${{ runner.os }}-${{ hashFiles('feeds.conf.default') }}-${{ hashFiles('.github/workflows/cache-control') }}
