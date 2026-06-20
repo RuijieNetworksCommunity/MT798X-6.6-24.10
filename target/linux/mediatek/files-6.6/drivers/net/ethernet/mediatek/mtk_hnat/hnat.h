@@ -1147,25 +1147,6 @@ enum FoeIpAct {
 	(((unsigned char *)&addr)[3], ((unsigned char *)&addr)[2],              \
 	((unsigned char *)&addr)[1], ((unsigned char *)&addr)[0])
 
-/*PSE Ports*/
-#define NR_PDMA_PORT 0
-#define NR_GMAC1_PORT 1
-#define NR_GMAC2_PORT 2
-#if defined(CONFIG_MEDIATEK_NETSYS_V2) || defined(CONFIG_MEDIATEK_NETSYS_V3)
-#define NR_WHNAT_WDMA_PORT EINVAL
-#define NR_PPE0_PORT 3
-#define NR_PPE1_PORT 4
-#define NR_PPE2_PORT 0xC
-#else
-#define NR_WHNAT_WDMA_PORT 3
-#define NR_PPE0_PORT 4
-#endif
-#define NR_QDMA_PORT 5
-#define NR_DISCARD 7
-#define NR_WDMA0_PORT 8
-#define NR_WDMA1_PORT 9
-#define NR_WDMA2_PORT 13
-#define NR_GMAC3_PORT 15
 #define LAN_DEV_NAME hnat_priv->lan
 #define LAN2_DEV_NAME hnat_priv->lan2
 #define IS_WAN(dev)                                                            \

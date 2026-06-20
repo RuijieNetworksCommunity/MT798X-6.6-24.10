@@ -27,7 +27,6 @@
 #include <net/netfilter/nf_conntrack.h>
 #include <net/netfilter/nf_conntrack_acct.h>
 
-#include "nf_hnat_mtk.h"
 #include "hnat.h"
 
 #include "../mtk_eth_soc.h"
@@ -759,10 +758,10 @@ static void pre_routing_print(struct sk_buff *skb, const struct net_device *in,
 			      const struct net_device *out, const char *func)
 {
 	trace_printk(
-		"[%s]: %s(iif=0x%x CB2=0x%x)-->%s (ppe_hash=0x%x) sport=0x%x reason=0x%x alg=0x%x from %s\n",
+		"[%s]: %s(iif=0x%x CB2=0x%x)-->%s (ppe_hash=0x%x) sport=%s reason=%s alg=0x%x from %s\n",
 		__func__, in->name, skb_hnat_iface(skb),
 		HNAT_SKB_CB2(skb)->magic, out->name, skb_hnat_entry(skb),
-		skb_hnat_sport(skb), skb_hnat_reason(skb), skb_hnat_alg(skb),
+		PSEport_to_str(skb_hnat_sport(skb)), PPEcpu_reason_to_str(skb_hnat_reason(skb)), skb_hnat_alg(skb),
 		func);
 }
 
@@ -770,10 +769,10 @@ static void post_routing_print(struct sk_buff *skb, const struct net_device *in,
 			       const struct net_device *out, const char *func)
 {
 	trace_printk(
-		"[%s]: %s(iif=0x%x, CB2=0x%x)-->%s (ppe_hash=0x%x) sport=0x%x reason=0x%x alg=0x%x from %s\n",
+		"[%s]: %s(iif=0x%x, CB2=0x%x)-->%s (ppe_hash=0x%x) sport=%s reason=%s alg=0x%x from %s\n",
 		__func__, in->name, skb_hnat_iface(skb),
 		HNAT_SKB_CB2(skb)->magic, out->name, skb_hnat_entry(skb),
-		skb_hnat_sport(skb), skb_hnat_reason(skb), skb_hnat_alg(skb),
+		PSEport_to_str(skb_hnat_sport(skb)), PPEcpu_reason_to_str(skb_hnat_reason(skb)), skb_hnat_alg(skb),
 		func);
 }
 
@@ -1122,10 +1121,10 @@ drop:
 	if (skb)
 		printk_ratelimited(KERN_WARNING
 			"%s:drop (in_dev=%s, iif=0x%x, CB2=0x%x, ppe_hash=0x%x,\n"
-			"sport=0x%x, reason=0x%x, alg=0x%x)\n",
+			"sport=%s, reason=%s, alg=0x%x)\n",
 			__func__, state->in->name, skb_hnat_iface(skb),
 			HNAT_SKB_CB2(skb)->magic, skb_hnat_entry(skb),
-			skb_hnat_sport(skb), skb_hnat_reason(skb),
+			PSEport_to_str(skb_hnat_sport(skb)), PPEcpu_reason_to_str(skb_hnat_reason(skb)),
 			skb_hnat_alg(skb));
 
 	return NF_DROP;
@@ -1202,10 +1201,10 @@ drop:
 	if (skb)
 		printk_ratelimited(KERN_WARNING
 			"%s:drop (in_dev=%s, iif=0x%x, CB2=0x%x, ppe_hash=0x%x,\n"
-			"sport=0x%x, reason=0x%x, alg=0x%x)\n",
+			"sport=0x%x, reason=%s, alg=0x%x)\n",
 			__func__, state->in->name, skb_hnat_iface(skb),
 			HNAT_SKB_CB2(skb)->magic, skb_hnat_entry(skb),
-			skb_hnat_sport(skb), skb_hnat_reason(skb),
+			skb_hnat_sport(skb), PPEcpu_reason_to_str(skb_hnat_reason(skb)),
 			skb_hnat_alg(skb));
 
 	return NF_DROP;
@@ -1303,10 +1302,10 @@ drop:
 	if (skb)
 		printk_ratelimited(KERN_WARNING
 			"%s:drop (in_dev=%s, iif=0x%x, CB2=0x%x, ppe_hash=0x%x,\n"
-			"sport=0x%x, reason=0x%x, alg=0x%x)\n",
+			"sport=%s, reason=%s, alg=0x%x)\n",
 			__func__, state->in->name, skb_hnat_iface(skb),
 			HNAT_SKB_CB2(skb)->magic, skb_hnat_entry(skb),
-			skb_hnat_sport(skb), skb_hnat_reason(skb),
+			PSEport_to_str(skb_hnat_sport(skb)), PPEcpu_reason_to_str(skb_hnat_reason(skb)),
 			skb_hnat_alg(skb));
 
 	return NF_DROP;
@@ -2243,8 +2242,8 @@ int mtk_sw_nat_hook_tx(struct sk_buff *skb, int gmac_no)
 		return NF_ACCEPT;
 
 	trace_printk(
-		"[%s]entry=%x reason=%x gmac_no=%x wdmaid=%x rxid=%x wcid=%x bssid=%x\n",
-		__func__, skb_hnat_entry(skb), skb_hnat_reason(skb), gmac_no,
+		"[%s]entry=%x reason=%s gmac_no=%x wdmaid=%x rxid=%x wcid=%x bssid=%x\n",
+		__func__, skb_hnat_entry(skb), PPEcpu_reason_to_str(skb_hnat_reason(skb)), gmac_no,
 		skb_hnat_wdma_id(skb), skb_hnat_bss_id(skb),
 		skb_hnat_wc_id(skb), skb_hnat_rx_id(skb));
 
@@ -3041,8 +3040,8 @@ static unsigned int mtk_hnat_nf_post_routing(
 	if (!IS_WHNAT(out) && IS_EXT(out))
 		return 0;
 
-	trace_printk("[%s] case hit, %x-->%s, reason=%x\n", __func__,
-		     skb_hnat_iface(skb), out->name, skb_hnat_reason(skb));
+	trace_printk("[%s] case hit, %x-->%s, reason=%s\n", __func__,
+		     skb_hnat_iface(skb), out->name, PPEcpu_reason_to_str(skb_hnat_reason(skb)));
 
 	if (skb_hnat_entry(skb) >= hnat_priv->foe_etry_num ||
 	    skb_hnat_ppe(skb) >= CFG_PPE_NUM)
@@ -3196,10 +3195,10 @@ drop:
 	if (skb)
 		trace_printk(
 			"%s:drop (iif=0x%x, out_dev=%s, CB2=0x%x, ppe_hash=0x%x,\n"
-			"sport=0x%x, reason=0x%x, alg=0x%x)\n",
+			"sport=%s, reason=%s, alg=0x%x)\n",
 			__func__, skb_hnat_iface(skb), state->out->name,
 			HNAT_SKB_CB2(skb)->magic, skb_hnat_entry(skb),
-			skb_hnat_sport(skb), skb_hnat_reason(skb),
+			PSEport_to_str(skb_hnat_sport(skb)), PPEcpu_reason_to_str(skb_hnat_reason(skb)),
 			skb_hnat_alg(skb));
 
 	return NF_DROP;
@@ -3222,10 +3221,10 @@ drop:
 	if (skb)
 		trace_printk(
 			"%s:drop (iif=0x%x, out_dev=%s, CB2=0x%x, ppe_hash=0x%x,\n"
-			"sport=0x%x, reason=0x%x, alg=0x%x)\n",
+			"sport=%s, reason=%s, alg=0x%x)\n",
 			__func__, skb_hnat_iface(skb), state->out->name,
 			HNAT_SKB_CB2(skb)->magic, skb_hnat_entry(skb),
-			skb_hnat_sport(skb), skb_hnat_reason(skb),
+			PSEport_to_str(skb_hnat_sport(skb)), PPEcpu_reason_to_str(skb_hnat_reason(skb)),
 			skb_hnat_alg(skb));
 
 	return NF_DROP;
@@ -3274,10 +3273,10 @@ drop:
 	if (skb)
 		printk_ratelimited(KERN_WARNING
 			"%s:drop (in_dev=%s, iif=0x%x, CB2=0x%x, ppe_hash=0x%x,\n"
-			"sport=0x%x, reason=0x%x, alg=0x%x)\n",
+			"sport=%s, reason=%s, alg=0x%x)\n",
 			__func__, state->in->name, skb_hnat_iface(skb),
 			HNAT_SKB_CB2(skb)->magic, skb_hnat_entry(skb),
-			skb_hnat_sport(skb), skb_hnat_reason(skb),
+			PSEport_to_str(skb_hnat_sport(skb)), PPEcpu_reason_to_str(skb_hnat_reason(skb)),
 			skb_hnat_alg(skb));
 
 	return NF_DROP;
@@ -3308,10 +3307,10 @@ drop:
 	if (skb)
 		trace_printk(
 			"%s:drop (iif=0x%x, out_dev=%s, CB2=0x%x, ppe_hash=0x%x,\n"
-			"sport=0x%x, reason=0x%x, alg=0x%x)\n",
+			"sport=%s, reason=%s, alg=0x%x)\n",
 			__func__, skb_hnat_iface(skb), state->out->name,
 			HNAT_SKB_CB2(skb)->magic, skb_hnat_entry(skb),
-			skb_hnat_sport(skb), skb_hnat_reason(skb),
+			PSEport_to_str(skb_hnat_sport(skb)), PPEcpu_reason_to_str(skb_hnat_reason(skb)),
 			skb_hnat_alg(skb));
 
 	return NF_DROP;

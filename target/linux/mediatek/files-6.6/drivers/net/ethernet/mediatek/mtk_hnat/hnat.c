@@ -23,7 +23,6 @@
 #include <linux/rtnetlink.h>
 #include <net/netlink.h>
 
-#include "nf_hnat_mtk.h"
 #include "hnat.h"
 
 struct mtk_hnat *hnat_priv;

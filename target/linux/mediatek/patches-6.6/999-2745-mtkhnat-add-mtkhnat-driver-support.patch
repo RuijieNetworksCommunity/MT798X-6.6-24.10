@@ -73,14 +73,14 @@ index 851766b..afcd264 100644
 +		
 +
 +		if (skb_hnat_reason(skb) == HIT_BIND_FORCE_TO_CPU) {
-+			trace_printk("[%s] reason=0x%x(force to CPU) from WAN to Ext\n",
-+				     __func__, skb_hnat_reason(skb));
++			trace_printk("[%s] reason=%s(force to CPU) from WAN to Ext\n",
++				     __func__, PPEcpu_reason_to_str(skb_hnat_reason(skb)));
 +			skb->pkt_type = PACKET_HOST;
 +		}
 +
-+		trace_printk("[%s] rxd:(entry=%x,sport=%x,reason=%x,alg=%x\n",
-+			     __func__, skb_hnat_entry(skb), skb_hnat_sport(skb),
-+			     skb_hnat_reason(skb), skb_hnat_alg(skb));
++		trace_printk("[%s] rxd:(entry=%x,sport=%s,reason=%s,alg=%x\n",
++			     __func__, skb_hnat_entry(skb), PSEport_to_str(skb_hnat_sport(skb)),
++			     PPEcpu_reason_to_str(skb_hnat_reason(skb)), skb_hnat_alg(skb));
 +#else
  		if (reason == MTK_PPE_CPU_REASON_HIT_UNBIND_RATE_REACHED)
  			mtk_ppe_check_skb(eth->ppe[ppe_idx], skb, hash);

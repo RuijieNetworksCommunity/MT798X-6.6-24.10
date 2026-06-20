@@ -1,0 +1,187 @@
+Index: linux-6.6.94/drivers/net/ethernet/mediatek/mtk_eth_soc.c
+===================================================================
+--- linux-6.6.94.orig/drivers/net/ethernet/mediatek/mtk_eth_soc.c
++++ linux-6.6.94/drivers/net/ethernet/mediatek/mtk_eth_soc.c
+@@ -596,6 +596,77 @@ static bool mtk_check_gmac23_idle(struct
+ 	return false;
+ }
+ 
++char *PSEport_to_str(u32 sport)
++{
++	static u8 buf[32];
++
++	switch ((enum PSEport_enum)sport)
++	{
++		case PSE_PDMA:       return "PSE_PDMA";
++		case PSE_GMAC1:      return "PSE_GMAC1";
++		case PSE_GMAC2:      return "PSE_GMAC2";
++		case PSE_WHNAT_WDMA: return "PSE_WHNAT_WDMA";
++		case PSE_PPE0:       return "PSE_PPE0";
++		case PSE_PPE1:       return "PSE_PPE1";
++		case PSE_PPE2:       return "PSE_PPE2";
++		case PSE_QDMA:       return "PSE_QDMA";
++		case PSE_DISCARD:    return "PSE_DISCARD";
++		case PSE_WDMA0:      return "PSE_WDMA0";
++		case PSE_WDMA1:      return "PSE_WDMA1";
++		case PSE_WDMA2:      return "PSE_WDMA2";
++		case PSE_GMAC3:      return "PSE_GMAC3";
++	}
++
++	int ret = snprintf(buf, sizeof(buf), "UNKNOW0x%04X",
++		       sport);
++	if (ret == strlen(buf))
++		return buf;
++	else
++		return "Error";
++}
++EXPORT_SYMBOL(PSEport_to_str);
++
++char *PPEcpu_reason_to_str(u32 reason)
++{
++	static u8 buf[32];
++
++	switch ((enum PPE_cpu_Reson)reason)
++	{
++	case PPE_CPU_TTL_0:                                return "TTL_0";
++	case PPE_CPU_HAS_OPTION_HEADER:                    return "HAS_OPTION_HEADER";
++	case PPE_CPU_NO_FLOW_IS_ASSIGNED:                  return "NO_FLOW_IS_ASSIGNED";
++	case PPE_CPU_IPV4_WITH_FRAGMENT:                   return "IPV4_WITH_FRAGMENT";
++	case PPE_CPU_IPV4_HNAPT_DSLITE_WITH_FRAGMENT:      return "IPV4_HNAPT_DSLITE_WITH_FRAGMENT";
++	case PPE_CPU_IPV4_HNAPT_DSLITE_WITHOUT_TCP_UDP:    return "IPV4_HNAPT_DSLITE_WITHOUT_TCP_UDP";
++	case PPE_CPU_IPV6_5T_6RD_WITHOUT_TCP_UDP:          return "IPV6_5T_6RD_WITHOUT_TCP_UDP";
++	case PPE_CPU_TCP_FIN_SYN_RST:                      return "TCP_FIN_SYN_RST";
++	case PPE_CPU_UN_HIT:                               return "UN_HIT";
++	case PPE_CPU_HIT_UNBIND:                           return "HIT_UNBIND";
++	case PPE_CPU_HIT_UNBIND_RATE_REACH:                return "HIT_UNBIND_RATE_REACH";
++	case PPE_CPU_HIT_BIND_TCP_FIN:                     return "HIT_BIND_TCP_FIN";
++	case PPE_CPU_HIT_BIND_TTL_1:                       return "HIT_BIND_TTL_1";
++	case PPE_CPU_HIT_BIND_WITH_VLAN_VIOLATION:         return "HIT_BIND_WITH_VLAN_VIOLATION";
++	case PPE_CPU_HIT_BIND_KEEPALIVE_UC_OLD_HDR:        return "HIT_BIND_KEEPALIVE_UC_OLD_HDR";
++	case PPE_CPU_HIT_BIND_KEEPALIVE_MC_NEW_HDR:        return "HIT_BIND_KEEPALIVE_MC_NEW_HDR";
++	case PPE_CPU_HIT_BIND_KEEPALIVE_DUP_OLD_HDR:       return "HIT_BIND_KEEPALIVE_DUP_OLD_HDR";
++	case PPE_CPU_HIT_BIND_FORCE_TO_CPU:                return "HIT_BIND_FORCE_TO_CPU";
++	case PPE_CPU_HIT_BIND_WITH_OPTION_HEADER:          return "HIT_BIND_WITH_OPTION_HEADER";
++	case PPE_CPU_HIT_BIND_MULTICAST_TO_CPU:            return "HIT_BIND_MULTICAST_TO_CPU";
++	case PPE_CPU_HIT_BIND_MULTICAST_TO_GMAC_CPU:       return "HIT_BIND_MULTICAST_TO_GMAC_CPU";
++	case PPE_CPU_HIT_PRE_BIND:                         return "HIT_PRE_BIND";
++	case PPE_CPU_HIT_BIND_PACKET_SAMPLING:             return "HIT_BIND_PACKET_SAMPLING";
++	case PPE_CPU_HIT_BIND_EXCEED_MTU:                  return "HIT_BIND_EXCEED_MTU";
++	}
++
++	int ret = snprintf(buf, sizeof(buf), "UNKNOW0x%04X",
++		       reason);
++	if (ret == strlen(buf))
++		return buf;
++	else
++		return "Error";
++}
++EXPORT_SYMBOL(PPEcpu_reason_to_str);
++
+ static struct phylink_pcs *mtk_mac_select_pcs(struct phylink_config *config,
+ 					      phy_interface_t interface)
+ {
+Index: linux-6.6.94/drivers/net/ethernet/mediatek/mtk_eth_soc.h
+===================================================================
+--- linux-6.6.94.orig/drivers/net/ethernet/mediatek/mtk_eth_soc.h
++++ linux-6.6.94/drivers/net/ethernet/mediatek/mtk_eth_soc.h
+@@ -23,6 +23,100 @@
+ #include <linux/bpf_trace.h>
+ #include "mtk_ppe.h"
+ 
++/*PSE Ports*/
++#define NR_PDMA_PORT 0
++#define NR_GMAC1_PORT 1
++#define NR_GMAC2_PORT 2
++#if defined(CONFIG_MEDIATEK_NETSYS_V2) || defined(CONFIG_MEDIATEK_NETSYS_V3)
++#define NR_WHNAT_WDMA_PORT EINVAL
++#define NR_PPE0_PORT 3
++#define NR_PPE1_PORT 4
++#define NR_PPE2_PORT 0xC
++#else
++#define NR_WHNAT_WDMA_PORT 3
++#define NR_PPE0_PORT 4
++#define NR_PPE1_PORT EINVAL
++#define NR_PPE2_PORT EINVAL
++#endif
++#define NR_QDMA_PORT 5
++#define NR_DISCARD 7
++#define NR_WDMA0_PORT 8
++#define NR_WDMA1_PORT 9
++#define NR_WDMA2_PORT 13
++#define NR_GMAC3_PORT 15
++
++/* PPE CPU Reason */
++#define TTL_0 0x02
++#define HAS_OPTION_HEADER 0x03
++#define NO_FLOW_IS_ASSIGNED 0x07
++#define IPV4_WITH_FRAGMENT 0x08
++#define IPV4_HNAPT_DSLITE_WITH_FRAGMENT 0x09
++#define IPV4_HNAPT_DSLITE_WITHOUT_TCP_UDP 0x0A
++#define IPV6_5T_6RD_WITHOUT_TCP_UDP 0x0B
++#define TCP_FIN_SYN_RST 0x0C /* Ingress packet is TCP fin/syn/rst (for IPv4 NAPT/DS-Lite or IPv6 5T-route/6RD) */
++#define UN_HIT 0x0D /* FOE Un-hit */
++#define HIT_UNBIND 0x0E /* FOE Hit unbind */
++#define HIT_UNBIND_RATE_REACH 0x0F
++#define HIT_BIND_TCP_FIN 0x10
++#define HIT_BIND_TTL_1 0x11
++#define HIT_BIND_WITH_VLAN_VIOLATION 0x12
++#define HIT_BIND_KEEPALIVE_UC_OLD_HDR 0x13
++#define HIT_BIND_KEEPALIVE_MC_NEW_HDR 0x14
++#define HIT_BIND_KEEPALIVE_DUP_OLD_HDR 0x15
++#define HIT_BIND_FORCE_TO_CPU 0x16
++#define HIT_BIND_WITH_OPTION_HEADER 0x17
++#define HIT_BIND_MULTICAST_TO_CPU 0x18
++#define HIT_BIND_MULTICAST_TO_GMAC_CPU 0x19
++#define HIT_PRE_BIND 0x1A
++#define HIT_BIND_PACKET_SAMPLING 0x1B
++#define HIT_BIND_EXCEED_MTU 0x1C
++
++enum PPE_cpu_Reson {
++	PPE_CPU_TTL_0                                = TTL_0,
++	PPE_CPU_HAS_OPTION_HEADER                    = HAS_OPTION_HEADER,
++	PPE_CPU_NO_FLOW_IS_ASSIGNED                  = NO_FLOW_IS_ASSIGNED,
++	PPE_CPU_IPV4_WITH_FRAGMENT                   = IPV4_WITH_FRAGMENT,
++	PPE_CPU_IPV4_HNAPT_DSLITE_WITH_FRAGMENT      = IPV4_HNAPT_DSLITE_WITH_FRAGMENT,
++	PPE_CPU_IPV4_HNAPT_DSLITE_WITHOUT_TCP_UDP    = IPV4_HNAPT_DSLITE_WITHOUT_TCP_UDP,
++	PPE_CPU_IPV6_5T_6RD_WITHOUT_TCP_UDP          = IPV6_5T_6RD_WITHOUT_TCP_UDP,
++	PPE_CPU_TCP_FIN_SYN_RST                      = TCP_FIN_SYN_RST,
++	PPE_CPU_UN_HIT                               = UN_HIT,
++	PPE_CPU_HIT_UNBIND                           = HIT_UNBIND,
++	PPE_CPU_HIT_UNBIND_RATE_REACH                = HIT_UNBIND_RATE_REACH,
++	PPE_CPU_HIT_BIND_TCP_FIN                     = HIT_BIND_TCP_FIN,
++	PPE_CPU_HIT_BIND_TTL_1                       = HIT_BIND_TTL_1,
++	PPE_CPU_HIT_BIND_WITH_VLAN_VIOLATION         = HIT_BIND_WITH_VLAN_VIOLATION,
++	PPE_CPU_HIT_BIND_KEEPALIVE_UC_OLD_HDR        = HIT_BIND_KEEPALIVE_UC_OLD_HDR,
++	PPE_CPU_HIT_BIND_KEEPALIVE_MC_NEW_HDR        = HIT_BIND_KEEPALIVE_MC_NEW_HDR,
++	PPE_CPU_HIT_BIND_KEEPALIVE_DUP_OLD_HDR       = HIT_BIND_KEEPALIVE_DUP_OLD_HDR,
++	PPE_CPU_HIT_BIND_FORCE_TO_CPU                = HIT_BIND_FORCE_TO_CPU,
++	PPE_CPU_HIT_BIND_WITH_OPTION_HEADER          = HIT_BIND_WITH_OPTION_HEADER,
++	PPE_CPU_HIT_BIND_MULTICAST_TO_CPU            = HIT_BIND_MULTICAST_TO_CPU,
++	PPE_CPU_HIT_BIND_MULTICAST_TO_GMAC_CPU       = HIT_BIND_MULTICAST_TO_GMAC_CPU,
++	PPE_CPU_HIT_PRE_BIND                         = HIT_PRE_BIND,
++	PPE_CPU_HIT_BIND_PACKET_SAMPLING             = HIT_BIND_PACKET_SAMPLING,
++	PPE_CPU_HIT_BIND_EXCEED_MTU                  = HIT_BIND_EXCEED_MTU,
++};
++
++enum PSEport_enum {
++	PSE_PDMA       = NR_PDMA_PORT,
++	PSE_GMAC1      = NR_GMAC1_PORT,
++	PSE_GMAC2      = NR_GMAC2_PORT,
++	PSE_WHNAT_WDMA = NR_WHNAT_WDMA_PORT,
++	PSE_PPE0       = NR_PPE0_PORT,
++	PSE_PPE1       = NR_PPE1_PORT,
++	PSE_PPE2       = NR_PPE2_PORT,
++	PSE_QDMA       = NR_QDMA_PORT,
++	PSE_DISCARD    = NR_DISCARD,
++	PSE_WDMA0      = NR_WDMA0_PORT,
++	PSE_WDMA1      = NR_WDMA1_PORT,
++	PSE_WDMA2      = NR_WDMA2_PORT,
++	PSE_GMAC3      = NR_GMAC3_PORT,
++};
++
++extern char *PSEport_to_str(u32 sport);
++extern char *PPEcpu_reason_to_str(u32 reason);
++
+ #define MTK_MAX_DSA_PORTS	7
+ #define MTK_DSA_PORT_MASK	GENMASK(2, 0)
+ 

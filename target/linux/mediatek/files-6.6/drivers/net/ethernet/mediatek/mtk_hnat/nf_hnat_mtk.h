@@ -141,31 +141,6 @@ struct hnat_desc {
 #define is_unreserved_port(hdr)						       \
 	((ntohs(hdr->source) > 1023) && (ntohs(hdr->dest) > 1023))
 
-#define TTL_0 0x02
-#define HAS_OPTION_HEADER 0x03
-#define NO_FLOW_IS_ASSIGNED 0x07
-#define IPV4_WITH_FRAGMENT 0x08
-#define IPV4_HNAPT_DSLITE_WITH_FRAGMENT 0x09
-#define IPV4_HNAPT_DSLITE_WITHOUT_TCP_UDP 0x0A
-#define IPV6_5T_6RD_WITHOUT_TCP_UDP 0x0B
-#define TCP_FIN_SYN_RST                                                        \
-	0x0C /* Ingress packet is TCP fin/syn/rst (for IPv4 NAPT/DS-Lite or IPv6 5T-route/6RD) */
-#define UN_HIT 0x0D /* FOE Un-hit */
-#define HIT_UNBIND 0x0E /* FOE Hit unbind */
-#define HIT_UNBIND_RATE_REACH 0x0F
-#define HIT_BIND_TCP_FIN 0x10
-#define HIT_BIND_TTL_1 0x11
-#define HIT_BIND_WITH_VLAN_VIOLATION 0x12
-#define HIT_BIND_KEEPALIVE_UC_OLD_HDR 0x13
-#define HIT_BIND_KEEPALIVE_MC_NEW_HDR 0x14
-#define HIT_BIND_KEEPALIVE_DUP_OLD_HDR 0x15
-#define HIT_BIND_FORCE_TO_CPU 0x16
-#define HIT_BIND_WITH_OPTION_HEADER 0x17
-#define HIT_BIND_MULTICAST_TO_CPU 0x18
-#define HIT_BIND_MULTICAST_TO_GMAC_CPU 0x19
-#define HIT_PRE_BIND 0x1A
-#define HIT_BIND_PACKET_SAMPLING 0x1B
-#define HIT_BIND_EXCEED_MTU 0x1C
 #define IPVERSION_V4 0x04
 #define IPVERSION_V6 0x06
 #define TPORT_ID(x) ((x) & GENMASK(3, 0))

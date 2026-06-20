@@ -19,7 +19,6 @@
 #include <linux/inet.h>
 #include <net/ipv6.h>
 #include "hnat.h"
-#include "nf_hnat_mtk.h"
 #include "../mtk_eth_soc.h"
 
 int dbg_entry_state = BIND;
