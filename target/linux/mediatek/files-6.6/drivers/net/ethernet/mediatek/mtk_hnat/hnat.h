@@ -994,6 +994,7 @@ enum FoeEntryState { INVALID = 0, UNBIND = 1, BIND = 2, FIN = 3 };
 enum FoeIpAct {
 	IPV4_HNAPT = 0,
 	IPV4_HNAT = 1,
+	BRIDGE = 2,
 	IPV4_DSLITE = 3,
 	IPV6_3T_ROUTE = 4,
 	IPV6_5T_ROUTE = 5,
@@ -1266,7 +1267,8 @@ int hnat_dsa_fill_stag(const struct net_device *netdev,
 		       struct foe_entry *entry,
 		       struct flow_offload_hw_path *hw_path,
 		       u16 eth_proto, int mape);
-int hnat_dsa_get_port(struct net_device **dev);
+int hnat_get_dsa_port(struct net_device **dev, u16 *push_vid);
+
 static inline bool hnat_dsa_is_enable(struct mtk_hnat *priv)
 {
 #if defined(CONFIG_NET_DSA)
@@ -1325,6 +1327,11 @@ int mtk_ppe_get_xlat_v6_by_v4(u32 *ipv4, struct in6_addr *ipv6,
 
 struct hnat_accounting *hnat_get_count(struct mtk_hnat *h, u32 ppe_id,
 				       u32 index, struct hnat_accounting *diff);
+
+int hnat_foe_entry_set_vlan(struct foe_entry *entry, int vid);
+int hnat_foe_entry_set_dsa(struct foe_entry *entry,
+			  int port);
+struct mtk_foe_mac_info *hnat_foe_entry_l2(struct foe_entry *entry);
 
 static inline u16 foe_timestamp(struct mtk_hnat *h)
 {

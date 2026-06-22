@@ -236,7 +236,7 @@ static void foe_clear_ethdev_bind_entries(struct net_device *dev)
 	u32 dsa_tag;
 	u32 total = 0;
 	/* Get the master device if the device is slave device */
-	port_id = hnat_dsa_get_port(&master_dev);
+	port_id = hnat_get_dsa_port(&master_dev, NULL);
 	mac = netdev_priv(master_dev);
 	gmac = HNAT_GMAC_FP(mac->id);
 	if (gmac < 0)
@@ -327,10 +327,9 @@ static void gmac_ppe_fwd_enable(struct net_device *dev)
 	struct mtk_mac *mac;
 
 	if (netdev_uses_dsa(master_dev))
-		hnat_dsa_get_port(&master_dev);
+		hnat_get_dsa_port(&master_dev, NULL);
 
 	mac = netdev_priv(master_dev);
- 
 
 	if (mac->id == MTK_GMAC1_ID)
 		set_gmac_ppe_fwd(NR_GMAC1_PORT, 1);
@@ -1463,8 +1462,10 @@ struct foe_entry ppe_fill_info_blk(struct ethhdr *eth, struct foe_entry entry,
 				   struct flow_offload_hw_path *hw_path)
 {
 	entry.bfib1.psn = (hw_path->flags & BIT(DEV_PATH_PPPOE)) ? 1 : 0;
-	entry.bfib1.vlan_layer += (hw_path->flags & BIT(DEV_PATH_VLAN)) ? 1 : 0;
-	entry.bfib1.vpm = (entry.bfib1.vlan_layer) ? 1 : 0;
+	if (hw_path->flags & BIT(DEV_PATH_VLAN))
+		hnat_foe_entry_set_vlan(&entry, hw_path->vlan_id);
+	// entry.bfib1.vlan_layer += (hw_path->flags & BIT(DEV_PATH_VLAN)) ? 1 : 0;
+	// entry.bfib1.vpm = (entry.bfib1.vlan_layer) ? 1 : 0;
 	entry.bfib1.cah = 1;
 	entry.bfib1.time_stamp = (hnat_priv->data->version == MTK_HNAT_V2 ||
 				  hnat_priv->data->version == MTK_HNAT_V3) ?
@@ -1536,6 +1537,69 @@ static inline void hnat_copy_foe_info(struct foe_entry *dst,
 
 	memcpy((u8 *)dst + offset, (const u8 *)src + offset,
 	       sizeof(*dst) - offset);
+}
+
+struct mtk_foe_mac_info *
+hnat_foe_entry_l2(struct foe_entry *entry)
+{
+	struct mtk_foe_mac_info *l2;
+	switch ((enum FoeIpAct)entry->bfib1.pkt_type)
+	{
+		case IPV4_DSLITE:
+		case IPV6_3T_ROUTE:
+		case IPV6_5T_ROUTE:
+		case IPV6_6RD:
+		case IPV6_HNAPT:
+		case IPV6_HNAT:
+			l2 = (struct mtk_foe_mac_info*)((char*)entry + offsetof(struct hnat_ipv4_dslite, vlan1));
+			return l2;
+		default:
+			l2 = (struct mtk_foe_mac_info*)((char*)entry + offsetof(struct hnat_ipv4_hnapt, vlan1));
+			return l2;
+	}
+}
+
+int hnat_foe_entry_set_vlan(struct foe_entry *entry, int vid)
+{
+	struct mtk_foe_mac_info *l2 = hnat_foe_entry_l2(entry);
+
+	switch (entry->bfib1.vlan_layer)
+	{
+		case 0:
+			l2->vlan1 = vid;
+			entry->bfib1.vpm = 1;
+			entry->bfib1.vlan_layer = 1;
+			return 0;
+		case 1:
+			if (!entry->bfib1.vpm)
+			{
+				l2->vlan1 = vid;
+				l2->etype |= BIT(8);
+			} else {
+				l2->vlan2 = vid;
+				entry->bfib1.vlan_layer +=1;
+			}
+			return 0;
+		default:
+			return -ENOSPC;
+	}
+}
+
+int hnat_foe_entry_set_dsa(struct foe_entry *entry,
+			  int port)
+{
+	struct mtk_foe_mac_info *l2 = hnat_foe_entry_l2(entry);
+
+	l2->etype = BIT(port);
+
+	if (!(entry->bfib1.vlan_layer))
+		entry->bfib1.vlan_layer = 1;
+	else 
+		l2->etype |= BIT(8);
+
+	entry->bfib1.vpm = 0;
+
+	return 0;
 }
 
 static unsigned int skb_to_hnat_info(struct sk_buff *skb,
@@ -1672,18 +1736,19 @@ static unsigned int skb_to_hnat_info(struct sk_buff *skb,
 				if (hnat_priv->data->per_flow_accounting)
 					entry.ipv4_hnapt.iblk2.mibf = 1;
 
-				entry.ipv4_hnapt.vlan1 = hw_path->vlan_id;
+				// entry.ipv4_hnapt.vlan1 = hw_path->vlan_id;
 
+				/*
 				if (skb_vlan_tagged(skb)) {
-					entry.bfib1.vlan_layer += 1;
-
-					if (entry.ipv4_hnapt.vlan1)
-						entry.ipv4_hnapt.vlan2 =
-							skb->vlan_tci;
-					else
-						entry.ipv4_hnapt.vlan1 =
-							skb->vlan_tci;
-			}
+					hnat_foe_entry_set_vlan(&entry, skb->vlan_tci);
+					struct mtk_foe_mac_info *l2 =  hnat_foe_entry_l2(&entry);
+					printk_ratelimited("v4 CATCHED SKB WITH VLAN entry: 0x%06x, vlan1:%d vlan2: %d, vpm: %d",
+								skb_hnat_entry(skb),
+								l2->vlan1,
+								l2->vlan2,
+								entry.bfib1.vpm);
+				}
+				*/
 
 				entry.ipv4_hnapt.sip = foe->ipv4_hnapt.sip;
 				entry.ipv4_hnapt.dip = foe->ipv4_hnapt.dip;
@@ -1732,18 +1797,18 @@ static unsigned int skb_to_hnat_info(struct sk_buff *skb,
 		case NEXTHDR_TCP: /* IPv6-5T or IPv6-3T */
 			entry.ipv6_5t_route.etype = htons(ETH_P_IPV6);
 
-			entry.ipv6_5t_route.vlan1 = hw_path->vlan_id;
+			// entry.ipv6_5t_route.vlan1 = hw_path->vlan_id;
 
+			/*
 			if (skb_vlan_tagged(skb)) {
-				entry.bfib1.vlan_layer += 1;
-
-				if (entry.ipv6_5t_route.vlan1)
-					entry.ipv6_5t_route.vlan2 =
-						skb->vlan_tci;
-				else
-					entry.ipv6_5t_route.vlan1 =
-						skb->vlan_tci;
+				hnat_foe_entry_set_vlan(&entry, skb->vlan_tci);
+				struct mtk_foe_mac_info *l2 =  hnat_foe_entry_l2(&entry);
+				printk_ratelimited("v6 CATCHED SKB WITH VLAN entry: 0x%06x, vlan1:%d vlan2: %d",
+							skb_hnat_entry(skb),
+							l2->vlan1,
+							l2->vlan2);
 			}
+			*/
 
 			if (hnat_priv->data->per_flow_accounting)
 				entry.ipv6_5t_route.iblk2.mibf = 1;
@@ -2030,13 +2095,11 @@ static unsigned int skb_to_hnat_info(struct sk_buff *skb,
 	/* Fill Info Blk*/
 	entry = ppe_fill_info_blk(eth, entry, hw_path);
 
-	if (IS_LAN_GRP(dev) || IS_WAN(dev)) { /* Forward to GMAC Ports */
-		port_id = hnat_dsa_get_port(&master_dev);
-		if (port_id >= 0) {
-			if (hnat_dsa_fill_stag(dev, &entry, hw_path,
-					       ntohs(eth->h_proto), mape) < 0)
-				return 0;
-		}
+	/* Forward to GMAC Ports */
+	if (IS_LAN_GRP(dev) || IS_WAN(dev)) {
+		if (hnat_dsa_fill_stag(dev, &entry, hw_path,
+						ntohs(eth->h_proto), mape) < 0)
+			return -1;
 		mac = netdev_priv(master_dev);
 		gmac = HNAT_GMAC_FP(mac->id);
 		if (IS_WAN(dev) && mape_toggle && mape == 1) {
@@ -2079,6 +2142,18 @@ static unsigned int skb_to_hnat_info(struct sk_buff *skb,
 				   skb_hnat_iface(skb), dev->name);
  		return 0;
  	}
+
+	if (skb_vlan_tagged(skb)) {
+		if (hnat_foe_entry_set_vlan(&entry, skb->vlan_tci) < 0)
+			return -1;
+		// struct mtk_foe_mac_info *l2 =  hnat_foe_entry_l2(&entry);
+		// printk_ratelimited("CATCHED SKB WITH VLAN entry: 0x%06x, vlan1:%d vlan2: %d, vmp: %d",
+		// 			skb_hnat_entry(skb),
+		// 			l2->vlan1,
+		// 			l2->vlan2,
+		// 			entry.bfib1.vpm);
+	}
+
 	if (IS_HQOS_MODE || (skb->mark & MTK_QDMA_TX_MASK) >= MAX_PPPQ_PORT_NUM)
 		qid = skb->mark & (MTK_QDMA_TX_MASK);
 	else if (IS_PPPQ_MODE && IS_PPPQ_PATH(dev, skb))
