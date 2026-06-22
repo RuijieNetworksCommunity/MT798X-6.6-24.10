@@ -2097,9 +2097,13 @@ static unsigned int skb_to_hnat_info(struct sk_buff *skb,
 
 	/* Forward to GMAC Ports */
 	if (IS_LAN_GRP(dev) || IS_WAN(dev)) {
-		if (hnat_dsa_fill_stag(dev, &entry, hw_path,
-						ntohs(eth->h_proto), mape) < 0)
-			return -1;
+		port_id = hnat_get_dsa_port(&master_dev, NULL);
+		if (port_id >= 0) {
+			if (hnat_dsa_fill_stag(dev, &entry, hw_path,
+							ntohs(eth->h_proto), mape) < 0)
+				return -1;
+		}
+
 		mac = netdev_priv(master_dev);
 		gmac = HNAT_GMAC_FP(mac->id);
 		if (IS_WAN(dev) && mape_toggle && mape == 1) {
