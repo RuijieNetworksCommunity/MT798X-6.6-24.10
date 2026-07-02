@@ -2398,9 +2398,57 @@ static const struct proc_ops hw_lro_auto_tlb_fops = {
 	.proc_release = single_release
 };
 
+int etn_info_read(struct seq_file *seq, void *v)
+{
+	struct mtk_eth *eth = g_eth;
+
+	seq_printf(seq, "base: %016x\n", eth->base);
+	seq_printf(seq, "esw_base: %016x\n", eth->esw_base);
+	seq_printf(seq, "sram_base: %016x\n", eth->sram_base);
+	seq_printf(seq, "sram_size: %d\n", eth->sram_size);
+
+	return 0;
+}
+
+static int etn_info_open(struct inode *inode, struct file *file)
+{
+	return single_open(file, etn_info_read, NULL);
+}
+
+static const struct proc_ops etn_info_fops = {
+	.proc_open = etn_info_open,
+	.proc_read = seq_read,
+	.proc_lseek = seq_lseek,
+	.proc_release = single_release
+};
+
+int fq_info_read(struct seq_file *seq, void *v)
+{
+	struct mtk_eth *eth = g_eth;
+
+	seq_printf(seq, "phy_scratch_ring: %016x\n", eth->fq_ring.phy_scratch_ring);
+	seq_printf(seq, "scratch_ring: %016x\n", eth->fq_ring.scratch_ring);
+	seq_printf(seq, "scratch_head: %016x\n", eth->fq_ring.scratch_head);
+	seq_printf(seq, "in_sram: %d\n", eth->fq_ring.in_sram);
+
+	return 0;
+}
+
+static int fq_info_open(struct inode *inode, struct file *file)
+{
+	return single_open(file, fq_info_read, NULL);
+}
+
+static const struct proc_ops fq_info_fops = {
+	.proc_open = fq_info_open,
+	.proc_read = seq_read,
+	.proc_lseek = seq_lseek,
+	.proc_release = single_release
+};
+
 struct proc_dir_entry *proc_reg_dir;
 static struct proc_dir_entry *proc_esw_cnt, *proc_mac_cnt, *proc_xfi_cnt,
-			     *proc_dbg_regs, *proc_reset_event;
+			     *proc_dbg_regs, *proc_reset_event, *proc_fq_info_dump, *proc_eth_info_dump;
 
 int debug_proc_init(struct mtk_eth *eth)
 {
@@ -2408,6 +2456,16 @@ int debug_proc_init(struct mtk_eth *eth)
 
 	if (!proc_reg_dir)
 		proc_reg_dir = proc_mkdir(PROCREG_DIR, NULL);
+
+	proc_eth_info_dump = 
+	    proc_create("eth_info", 0, proc_reg_dir, &etn_info_fops);
+	if (!proc_eth_info_dump)
+		pr_notice("!! FAIL to create %s PROC !!\n", "eth_info");
+
+		proc_fq_info_dump = 
+	    proc_create("fq_info", 0, proc_reg_dir, &fq_info_fops);
+	if (!proc_fq_info_dump)
+		pr_notice("!! FAIL to create %s PROC !!\n", "fq_info");
 
 	proc_tx_ring =
 	    proc_create(PROCREG_TXRING, 0, proc_reg_dir, &tx_ring_fops);
@@ -2472,6 +2530,12 @@ int debug_proc_init(struct mtk_eth *eth)
 
 void debug_proc_exit(void)
 {
+	if (proc_eth_info_dump)
+		remove_proc_entry("eth_info", proc_eth_info_dump);
+
+	if (proc_fq_info_dump)
+		remove_proc_entry("fq_info", proc_reg_dir);
+
 	if (proc_tx_ring)
 		remove_proc_entry(PROCREG_TXRING, proc_reg_dir);
 
