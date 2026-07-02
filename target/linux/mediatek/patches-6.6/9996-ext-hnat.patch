@@ -7,7 +7,7 @@ diff -u -r a/drivers/net/ethernet/mediatek/mtk_eth_soc.c b/drivers/net/ethernet/
  	data |= TX_DMA_SWC_V2 | QID_BITS_V2(info->qid);
 +	if(info->ext_ppe) {
 +		data &= ~(0xf << TX_DMA_FPORT_SHIFT_V2);
-+		data |= 0x3 << TX_DMA_FPORT_SHIFT_V2;
++		data |= NR_PPE0_PORT << TX_DMA_FPORT_SHIFT_V2; // send to ppe0
 +	}
  	WRITE_ONCE(desc->txd4, data);
  
@@ -53,9 +53,9 @@ diff -u -r a/drivers/net/ethernet/mediatek/mtk_eth_soc.c b/drivers/net/ethernet/
  		}
  
 +		if ( (mac == 4) || ((FIELD_GET(MTK_RXD5_PPE_CPU_REASON, trxd.rxd5)) == HIT_BIND_FORCE_TO_CPU)) 
-+			
 +		{
-+			mac = 1;
++			
++			mac = 0;
 +			sent_ppd = 1;
 +		}
 +
