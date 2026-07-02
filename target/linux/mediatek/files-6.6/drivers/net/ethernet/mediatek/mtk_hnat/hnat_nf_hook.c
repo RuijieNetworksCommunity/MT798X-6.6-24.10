@@ -1462,10 +1462,6 @@ struct foe_entry ppe_fill_info_blk(struct ethhdr *eth, struct foe_entry entry,
 				   struct flow_offload_hw_path *hw_path)
 {
 	entry.bfib1.psn = (hw_path->flags & BIT(DEV_PATH_PPPOE)) ? 1 : 0;
-	if (hw_path->flags & BIT(DEV_PATH_VLAN))
-		hnat_foe_entry_set_vlan(&entry, hw_path->vlan_id);
-	// entry.bfib1.vlan_layer += (hw_path->flags & BIT(DEV_PATH_VLAN)) ? 1 : 0;
-	// entry.bfib1.vpm = (entry.bfib1.vlan_layer) ? 1 : 0;
 	entry.bfib1.cah = 1;
 	entry.bfib1.time_stamp = (hnat_priv->data->version == MTK_HNAT_V2 ||
 				  hnat_priv->data->version == MTK_HNAT_V3) ?
@@ -1701,23 +1697,11 @@ static unsigned int skb_to_hnat_info(struct sk_buff *skb,
 				}
 #endif
 
-				entry.ipv4_dslite.tunnel_sipv6_0 =
-					foe->ipv4_dslite.tunnel_sipv6_0;
-				entry.ipv4_dslite.tunnel_sipv6_1 =
-					foe->ipv4_dslite.tunnel_sipv6_1;
-				entry.ipv4_dslite.tunnel_sipv6_2 =
-					foe->ipv4_dslite.tunnel_sipv6_2;
-				entry.ipv4_dslite.tunnel_sipv6_3 =
-					foe->ipv4_dslite.tunnel_sipv6_3;
+				memcpy(entry.ipv4_dslite.tunnel_sipv6, foe->ipv4_dslite.tunnel_sipv6, 
+					  sizeof(foe->ipv4_dslite.tunnel_sipv6));
 
-				entry.ipv4_dslite.tunnel_dipv6_0 =
-					foe->ipv4_dslite.tunnel_dipv6_0;
-				entry.ipv4_dslite.tunnel_dipv6_1 =
-					foe->ipv4_dslite.tunnel_dipv6_1;
-				entry.ipv4_dslite.tunnel_dipv6_2 =
-					foe->ipv4_dslite.tunnel_dipv6_2;
-				entry.ipv4_dslite.tunnel_dipv6_3 =
-					foe->ipv4_dslite.tunnel_dipv6_3;
+				memcpy(entry.ipv4_dslite.tunnel_dipv6, foe->ipv4_dslite.tunnel_dipv6, 
+					  sizeof(foe->ipv4_dslite.tunnel_dipv6));
 
 				entry.ipv4_dslite.bfib1.rmt = 1;
 				entry.ipv4_dslite.iblk2.dscp = iph->tos;
@@ -1827,23 +1811,11 @@ static unsigned int skb_to_hnat_info(struct sk_buff *skb,
 #endif
 			}
 
-			entry.ipv6_3t_route.ipv6_sip0 =
-				foe->ipv6_3t_route.ipv6_sip0;
-			entry.ipv6_3t_route.ipv6_sip1 =
-				foe->ipv6_3t_route.ipv6_sip1;
-			entry.ipv6_3t_route.ipv6_sip2 =
-				foe->ipv6_3t_route.ipv6_sip2;
-			entry.ipv6_3t_route.ipv6_sip3 =
-				foe->ipv6_3t_route.ipv6_sip3;
+			memcpy(entry.ipv6_3t_route.ipv6_sip, foe->ipv6_3t_route.ipv6_sip, 
+					  sizeof(entry.ipv6_3t_route.ipv6_sip));
 
-			entry.ipv6_3t_route.ipv6_dip0 =
-				foe->ipv6_3t_route.ipv6_dip0;
-			entry.ipv6_3t_route.ipv6_dip1 =
-				foe->ipv6_3t_route.ipv6_dip1;
-			entry.ipv6_3t_route.ipv6_dip2 =
-				foe->ipv6_3t_route.ipv6_dip2;
-			entry.ipv6_3t_route.ipv6_dip3 =
-				foe->ipv6_3t_route.ipv6_dip3;
+			memcpy(entry.ipv6_3t_route.ipv6_dip, foe->ipv6_3t_route.ipv6_dip, 
+					  sizeof(entry.ipv6_3t_route.ipv6_dip));
 
 			if (IS_IPV6_3T_ROUTE(foe)) {
 				entry.ipv6_3t_route.prot =
@@ -2055,15 +2027,11 @@ static unsigned int skb_to_hnat_info(struct sk_buff *skb,
 		iph = ip_hdr(skb);
 		switch (entry.bfib1.pkt_type) {
 		case IPV6_6RD: /* 6RD LAN->WAN */
-			entry.ipv6_6rd.ipv6_sip0 = foe->ipv6_6rd.ipv6_sip0;
-			entry.ipv6_6rd.ipv6_sip1 = foe->ipv6_6rd.ipv6_sip1;
-			entry.ipv6_6rd.ipv6_sip2 = foe->ipv6_6rd.ipv6_sip2;
-			entry.ipv6_6rd.ipv6_sip3 = foe->ipv6_6rd.ipv6_sip3;
+			memcpy(entry.ipv6_6rd.ipv6_sip, foe->ipv6_6rd.ipv6_sip, 
+					  sizeof(entry.ipv6_6rd.ipv6_sip));
 
-			entry.ipv6_6rd.ipv6_dip0 = foe->ipv6_6rd.ipv6_dip0;
-			entry.ipv6_6rd.ipv6_dip1 = foe->ipv6_6rd.ipv6_dip1;
-			entry.ipv6_6rd.ipv6_dip2 = foe->ipv6_6rd.ipv6_dip2;
-			entry.ipv6_6rd.ipv6_dip3 = foe->ipv6_6rd.ipv6_dip3;
+			memcpy(entry.ipv6_6rd.ipv6_dip, foe->ipv6_6rd.ipv6_dip, 
+					  sizeof(entry.ipv6_6rd.ipv6_dip));
 
 			entry.ipv6_6rd.sport = foe->ipv6_6rd.sport;
 			entry.ipv6_6rd.dport = foe->ipv6_6rd.dport;
@@ -2146,6 +2114,17 @@ static unsigned int skb_to_hnat_info(struct sk_buff *skb,
 				   skb_hnat_iface(skb), dev->name);
  		return 0;
  	}
+
+	if (hw_path->flags & BIT(DEV_PATH_VLAN))
+	{
+		hnat_foe_entry_set_vlan(&entry, hw_path->vlan_id);
+		// struct mtk_foe_mac_info *l2 = hnat_foe_entry_l2(&entry);
+		// printk_ratelimited("HW_PATH VLAN, vlan1:%d vlan2: %d, vmp: %d, hw_path->vlan_id: %d",
+		// 	l2->vlan1,
+		// 	l2->vlan2,
+		// 	entry.bfib1.vpm,
+		// 	hw_path->vlan_id);
+	}
 
 	if (skb_vlan_tagged(skb)) {
 		if (hnat_foe_entry_set_vlan(&entry, skb->vlan_tci) < 0)

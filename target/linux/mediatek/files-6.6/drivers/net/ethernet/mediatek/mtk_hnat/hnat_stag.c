@@ -74,6 +74,7 @@ int hnat_dsa_fill_stag(const struct net_device *netdev,
 
 	if (unlikely(ret < 0))
 		return ret;
+
 	// struct mtk_foe_mac_info *l2 =  hnat_foe_entry_l2(entry);
 	// printk_ratelimited("dsa_port: %d, push_vid: %d vlan1:%d vlan2: %d, vpm: %d",
 	// 			dsa_port, push_vid,

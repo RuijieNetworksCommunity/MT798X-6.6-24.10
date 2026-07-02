@@ -448,15 +448,25 @@ struct hnat_ipv4_dslite {
 	u16 dport;
 	u16 sport;
 
-	u32 tunnel_sipv6_0;
-	u32 tunnel_sipv6_1;
-	u32 tunnel_sipv6_2;
-	u32 tunnel_sipv6_3;
+	union {
+		struct {
+			u32 tunnel_sipv6_0;
+			u32 tunnel_sipv6_1;
+			u32 tunnel_sipv6_2;
+			u32 tunnel_sipv6_3;
+		};
+		u32 tunnel_sipv6[4];
+	};
 
-	u32 tunnel_dipv6_0;
-	u32 tunnel_dipv6_1;
-	u32 tunnel_dipv6_2;
-	u32 tunnel_dipv6_3;
+	union {
+		struct {
+			u32 tunnel_dipv6_0;
+			u32 tunnel_dipv6_1;
+			u32 tunnel_dipv6_2;
+			u32 tunnel_dipv6_3;
+		};
+		u32 tunnel_dipv6[4];
+	};
 
 	u8 flow_lbl[3]; /* in order to consist with Linux kernel (should be 20bits) */
 	u8 priority;    /* in order to consist with Linux kernel (should be 8bits) */
@@ -517,15 +527,25 @@ struct hnat_ipv4_mape {
 	u16 dport;
 	u16 sport;
 
-	u32 tunnel_sipv6_0;
-	u32 tunnel_sipv6_1;
-	u32 tunnel_sipv6_2;
-	u32 tunnel_sipv6_3;
+	union {
+		struct {
+			u32 tunnel_sipv6_0;
+			u32 tunnel_sipv6_1;
+			u32 tunnel_sipv6_2;
+			u32 tunnel_sipv6_3;
+		};
+		u32 tunnel_sipv6[4];
+	};
 
-	u32 tunnel_dipv6_0;
-	u32 tunnel_dipv6_1;
-	u32 tunnel_dipv6_2;
-	u32 tunnel_dipv6_3;
+	union {
+		struct {
+			u32 tunnel_dipv6_0;
+			u32 tunnel_dipv6_1;
+			u32 tunnel_dipv6_2;
+			u32 tunnel_dipv6_3;
+		};
+		u32 tunnel_dipv6[4];
+	};
 
 	u8 flow_lbl[3]; /* in order to consist with Linux kernel (should be 20bits) */
 	u8 priority;    /* in order to consist with Linux kernel (should be 8bits) */
@@ -589,14 +609,27 @@ struct hnat_ipv6_3t_route {
 		struct hnat_unbind_info_blk udib1;
 		u32 info_blk1;
 	};
-	u32 ipv6_sip0;
-	u32 ipv6_sip1;
-	u32 ipv6_sip2;
-	u32 ipv6_sip3;
-	u32 ipv6_dip0;
-	u32 ipv6_dip1;
-	u32 ipv6_dip2;
-	u32 ipv6_dip3;
+
+	union {
+		struct {
+			u32 ipv6_sip0;
+			u32 ipv6_sip1;
+			u32 ipv6_sip2;
+			u32 ipv6_sip3;
+		};
+		u32 ipv6_sip[4];
+	};
+
+	union {
+		struct {
+			u32 ipv6_dip0;
+			u32 ipv6_dip1;
+			u32 ipv6_dip2;
+			u32 ipv6_dip3;
+		};
+		u32 ipv6_dip[4];
+	};
+
 	u32 prot : 8;
 	u32 hph : 24; /* hash placeholder */
 
@@ -653,14 +686,27 @@ struct hnat_ipv6_5t_route {
 		struct hnat_unbind_info_blk udib1;
 		u32 info_blk1;
 	};
-	u32 ipv6_sip0;
-	u32 ipv6_sip1;
-	u32 ipv6_sip2;
-	u32 ipv6_sip3;
-	u32 ipv6_dip0;
-	u32 ipv6_dip1;
-	u32 ipv6_dip2;
-	u32 ipv6_dip3;
+
+	union {
+		struct {
+			u32 ipv6_sip0;
+			u32 ipv6_sip1;
+			u32 ipv6_sip2;
+			u32 ipv6_sip3;
+		};
+		u32 ipv6_sip[4];
+	};
+
+	union {
+		struct {
+			u32 ipv6_dip0;
+			u32 ipv6_dip1;
+			u32 ipv6_dip2;
+			u32 ipv6_dip3;
+		};
+		u32 ipv6_dip[4];
+	};
+
 	u16 dport;
 	u16 sport;
 
@@ -718,14 +764,27 @@ struct hnat_ipv6_6rd {
 		struct hnat_unbind_info_blk udib1;
 		u32 info_blk1;
 	};
-	u32 ipv6_sip0;
-	u32 ipv6_sip1;
-	u32 ipv6_sip2;
-	u32 ipv6_sip3;
-	u32 ipv6_dip0;
-	u32 ipv6_dip1;
-	u32 ipv6_dip2;
-	u32 ipv6_dip3;
+
+	union {
+		struct {
+			u32 ipv6_sip0;
+			u32 ipv6_sip1;
+			u32 ipv6_sip2;
+			u32 ipv6_sip3;
+		};
+		u32 ipv6_sip[4];
+	};
+
+	union {
+		struct {
+			u32 ipv6_dip0;
+			u32 ipv6_dip1;
+			u32 ipv6_dip2;
+			u32 ipv6_dip3;
+		};
+		u32 ipv6_dip[4];
+	};
+
 	u16 dport;
 	u16 sport;
 
@@ -791,14 +850,27 @@ struct hnat_ipv6_hnapt {
 		struct hnat_unbind_info_blk udib1;
 		u32 info_blk1;
 	};
-	u32 ipv6_sip0;
-	u32 ipv6_sip1;
-	u32 ipv6_sip2;
-	u32 ipv6_sip3;
-	u32 ipv6_dip0;
-	u32 ipv6_dip1;
-	u32 ipv6_dip2;
-	u32 ipv6_dip3;
+
+	union {
+		struct {
+			u32 ipv6_sip0;
+			u32 ipv6_sip1;
+			u32 ipv6_sip2;
+			u32 ipv6_sip3;
+		};
+		u32 ipv6_sip[4];
+	};
+
+	union {
+		struct {
+			u32 ipv6_dip0;
+			u32 ipv6_dip1;
+			u32 ipv6_dip2;
+			u32 ipv6_dip3;
+		};
+		u32 ipv6_dip[4];
+	};
+
 	u16 dport;
 	u16 sport;
 
