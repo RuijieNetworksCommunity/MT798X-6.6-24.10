@@ -2070,9 +2070,8 @@ define Device/tplink_tl-7dr7299-v1
   DEVICE_VARIANT := v1
   DEVICE_DTS := mt7988a-tplink-tl-7dr7299-v1
   DEVICE_DTS_DIR := ../dts
-  DEVICE_DTS_LOADADDR := 0x47f00000
   DEVICE_PACKAGES := kmod-mt7992-firmware mt7988-wo-firmware \
-	kmod-rtl837x_gsw kmod-rtl8261d swconfig kmod-i2c-gpio kmod-sfp kmod-usb3 automount
+	kmod-rtl837x_gsw kmod-rtl8261d swconfig kmod-sfp kmod-usb3 automount
   KERNEL_LOADADDR := 0x48000000
   UBINIZE_OPTS := -E 5
   BLOCKSIZE := 128k
@@ -2095,9 +2094,8 @@ define Device/tplink_tl-7dr7299-v1-dsa
   DEVICE_VARIANT := v1 (DSA)
   DEVICE_DTS := mt7988a-tplink-tl-7dr7299-v1-dsa
   DEVICE_DTS_DIR := ../dts
-  DEVICE_DTS_LOADADDR := 0x47f00000
   DEVICE_PACKAGES := kmod-mt7992-firmware mt7988-wo-firmware \
-	kmod-rtl8372n_dsa kmod-rtl8261d kmod-i2c-gpio kmod-sfp kmod-usb3 automount
+	kmod-rtl8372n_dsa kmod-rtl8261d kmod-sfp kmod-usb3 automount
   KERNEL_LOADADDR := 0x48000000
   UBINIZE_OPTS := -E 5
   BLOCKSIZE := 128k
