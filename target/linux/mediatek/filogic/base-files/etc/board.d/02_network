@@ -250,12 +250,14 @@ mediatek_setup_interfaces()
 	ruijie,rg-be68-ultra-dsa-mod)
 		ucidef_set_interfaces_lan_wan "lan1 lan2 lan3" wan
 		;;
-	hiveton,h87pro*)
-		# ucidef_set_interfaces_lan_wan "lan1 lan2 lan3 lan4 lan5" eth1
-
+	hiveton,h87pro|\
+	hiveton,h87pro-evb*)
 		ucidef_set_interfaces_lan_wan "eth0.1" eth1
 		ucidef_add_switch "switch0" \
 					"0@eth0" "1:lan" "2:lan" "3:lan" "4:lan" "5:lan"
+		;;
+	hiveton,h87pro-dsa)
+		ucidef_set_interfaces_lan_wan "lan1 lan2 lan3 lan4 lan5" eth1
 		;;
 	mediatek,mt7988*)
 		local sys_switch=$(mediatek_get_switch_type)

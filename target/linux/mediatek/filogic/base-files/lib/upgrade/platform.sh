@@ -134,6 +134,7 @@ platform_do_upgrade() {
 	hiveton,e87n|\
 	hiveton,h5000m|\
 	hiveton,h87pro|\
+	hiveton,h87pro-dsa|\
 	hiveton,h87pro-evb-emmc|\
 	huasifei,wh3000|\
 	mediatek,mt7987a|\
@@ -226,6 +227,7 @@ platform_check_image() {
 	hiveton,e87n|\
 	hiveton,h5000m|\
 	hiveton,h87pro|\
+	hiveton,h87pro-dsa|\
 	hiveton,h87pro-evb-emmc|\
 	tplink,tl-7dr7230-rev1.0-sp2|\
 	cmcc,rax3000m)
@@ -272,6 +274,7 @@ platform_copy_config() {
 	hiveton,e87n|\
 	hiveton,h5000m|\
 	hiveton,h87pro|\
+	hiveton,h87pro-dsa|\
 	hiveton,h87pro-evb-emmc|\
 	huasifei,wh3000|\
 	mediatek,mt7987a|\

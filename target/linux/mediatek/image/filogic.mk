@@ -2145,3 +2145,14 @@ define Device/hiveton_h87pro
   IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
 endef
 TARGET_DEVICES += hiveton_h87pro
+
+define Device/hiveton_h87pro-dsa
+  DEVICE_VENDOR := Hiveton
+  DEVICE_MODEL := h87pro (DSA)
+  DEVICE_DTS := mt7987a-hiveton-h87pro-dsa
+  DEVICE_DTS_DIR := ../dts
+  DEVICE_PACKAGES := mt798x-2p5g-phy-firmware-internal kmod-sfp kmod-usb3 kmod-rtl8372n-dsa kmod-i2c-gpio \
+   blkid automount e2fsprogs f2fsck mkf2fs
+  IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
+endef
+TARGET_DEVICES += hiveton_h87pro-dsa

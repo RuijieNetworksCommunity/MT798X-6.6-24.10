@@ -1,0 +1,104 @@
+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+
+/dts-v1/;
+#include "mt7987a-hiveton-h87pro.dts"
+
+/ {
+	model = "Hiveton h87pro (DSA)";
+	compatible = "hiveton,h87pro-dsa", "mediatek,mt7987a", "mediatek,mt7987";
+};
+
+&mdio {
+	/delete-node/ rtl837x-gsw@1;
+
+	rtk_gpio: rtl837x-gsw@1 {
+		compatible = "realtek,rtl8372n";
+		reg = <29>;
+		reset-gpios = <&pio 42 GPIO_ACTIVE_HIGH>;
+
+		sds1-rx-swap;
+		phy-mdi-reverse;
+		phy-tx-polarity-swap;
+
+		gpio-controller;
+		#gpio-cells = <2>;
+
+		ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+			port@3 {
+				reg = <3>;
+				label = "cpu";
+				ethernet = <&gmac0>;
+				phy-mode = "2500base-x";
+				dsa-tag-protocol = "mxl862xx-8021q";
+
+				fixed-link {
+					speed = <2500>;
+					full-duplex;
+					pause;
+					asym-pause;
+				};
+			};
+
+			port@4 {
+				reg = <4>;
+				label = "lan1";
+				phy-mode = "internal";
+				phy-handle = <&internal_phy1>;
+			};
+
+			port@5 {
+				reg = <5>;
+				label = "lan2";
+				phy-mode = "internal";
+				phy-handle = <&internal_phy2>;
+			};
+
+			port@6 {
+				reg = <6>;
+				label = "lan3";
+				phy-mode = "internal";
+				phy-handle = <&internal_phy3>;
+			};
+
+			port@7 {
+				reg = <7>;
+				label = "lan4";
+				phy-mode = "internal";
+				phy-handle = <&internal_phy4>;
+			};
+
+			port@8 {
+				reg = <8>;
+				label = "lan5";
+				sfp = <&sfp0>;
+				phy-mode = "10gbase-r";
+				managed = "in-band-status";
+			};
+		};
+
+		mdio {
+			internal_phy1: phy@4 {
+				compatible = "ethernet-phy-ieee802.3-c45";
+				reg = <4>;
+			};
+
+			internal_phy2: phy@5 {
+				compatible = "ethernet-phy-ieee802.3-c45";
+				reg = <5>;
+			};
+
+			internal_phy3: phy@6 {
+				compatible = "ethernet-phy-ieee802.3-c45";
+				reg = <6>;
+			};
+
+			internal_phy4: phy@7 {
+				compatible = "ethernet-phy-ieee802.3-c45";
+				reg = <7>;
+			};
+		};
+	};
+};
