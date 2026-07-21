@@ -1,6 +1,6 @@
 {
 	"admin/network/turboacc": {
-		"title": "TurboACC",
+		"title": "网络加速",
 		"action": {
 			"type": "view",
 			"path": "turboacc"

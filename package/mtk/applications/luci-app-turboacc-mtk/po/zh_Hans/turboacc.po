@@ -83,10 +83,6 @@ msgstr "为有线连接启用硬件加速。"
 msgid "Enable hardware offloading for wireless connections."
 msgstr "为无线连接启用硬件加速。"
 
-#: applications/luci-app-turboacc/htdocs/luci-static/resources/view/turboacc.js:177
-msgid "Enable wireless HNAT"
-msgstr "启用无线 HNAT"
-
 #: applications/luci-app-turboacc/htdocs/luci-static/resources/view/turboacc.js:124
 msgid "Fast classifier"
 msgstr "Fast classifier"
@@ -192,9 +188,107 @@ msgstr "XT_FULLCONE_NAT(更佳的兼容性)"
 msgid "Apply this setting after reboot."
 msgstr "重启后应用此项设置。"
 
-msgid "Number of HNAT PPE"
-msgstr "HNAT PPE数量"
-
 msgid "Bind Entrys"
 msgstr "已绑定连接数"
 
+msgid "Enabled"
+msgstr "已启用"
+
+msgid "Available"
+msgstr "可用"
+
+msgid "Unavailable"
+msgstr "不可用"
+
+msgid "Ethernet HNAT disabled"
+msgstr "以太网 HNAT 未启用"
+
+msgid "HNAT Partially Enabled"
+msgstr "HNAT 部分启用"
+
+msgid "No active acceleration path detected."
+msgstr "未检测到活动加速通路。"
+
+msgid "The current platform exposes IPv6, but this engine has no dedicated IPv6 toggle."
+msgstr "当前平台支持 IPv6，但所选引擎没有独立的 IPv6 开关。"
+
+msgid "Optimize the routing/NAT data plane for MediaTek 24.10 with live runtime telemetry."
+msgstr "为 MediaTek 24.10 优化路由/NAT 数据通路，并提供实时运行状态遥测。"
+
+msgid "MediaTek HNAT is the primary wired acceleration path on mt798x under 24.10."
+msgstr "在 24.10 的 mt798x 上，MediaTek HNAT 是主要的有线加速通路。"
+
+msgid "Save & Apply is required before live runtime cards reflect configuration changes."
+msgstr "必须先保存并应用，上方实时卡片才会反映配置变化。"
+
+msgid "Live data plane"
+msgstr "实时数据通路"
+
+msgid "Configured profile"
+msgstr "当前配置方案"
+
+msgid "Bound sessions"
+msgstr "已绑定会话"
+
+msgid "NAT & congestion"
+msgstr "NAT 与拥塞控制"
+
+msgid "Configured NAT mode"
+msgstr "当前 NAT 模式"
+
+msgid "Current TCP CCA"
+msgstr "当前 TCP CCA"
+
+msgid "Available engines"
+msgstr "可用引擎"
+
+msgid "PPE session load"
+msgstr "PPE 会话负载"
+
+msgid "Runtime details"
+msgstr "运行时详情"
+
+msgid "Route/NAT engine"
+msgstr "路由/NAT 引擎"
+
+msgid "Runtime warnings"
+msgstr "运行时告警"
+
+msgid "PPE lanes"
+msgstr "PPE 通道数"
+
+msgid "Total sessions"
+msgstr "总会话数"
+
+msgid "Capability matrix"
+msgstr "能力矩阵"
+
+msgid "Kernel IPv6 stack"
+msgstr "内核 IPv6 协议栈"
+
+msgid "Operating notes"
+msgstr "使用说明"
+
+msgid "Tune wired acceleration, NAT behavior and congestion control without leaving this page."
+msgstr "无需离开当前页面，即可完成有线加速、NAT 行为和拥塞控制调优。"
+
+msgid "Acceleration profile"
+msgstr "加速方案"
+
+msgid "Choose the primary acceleration engine used for routing and NAT."
+msgstr "选择用于路由/NAT 的主加速引擎。"
+
+msgid "HNAT tuning"
+msgstr "HNAT 调优"
+
+msgid "Tune wired HNAT behavior for MediaTek targets."
+msgstr "调整 MediaTek 平台的有线 HNAT 行为。"
+
+msgid "Pick the main data plane. Runtime cards above show what the kernel is actually using."
+msgstr "选择主数据通路。上方运行卡片显示的是内核当前实际生效状态。"
+
+msgid "Preferred HNAT path for MediaTek mt798x on OpenWrt 24.10."
+msgstr "OpenWrt 24.10 下 mt798x 首选的 HNAT 通路。"
+
+msgid "Keep wired IPv6 sessions on the HNAT path when supported by the current driver."
+msgstr "当前驱动支持时，让有线 IPv6 会话也走 HNAT 通路。"

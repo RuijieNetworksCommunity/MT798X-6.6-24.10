@@ -65,9 +65,7 @@ platform_check_image() {
 	bananapi,bpi-r4-pro|\
 	tplink,tl-7dr7230-rev1.0-sp2|\
 	tplink,tl-7dr7299-v1)
-		magic="$(dd if="$1" bs=1 skip=257 count=5 2>/dev/null)"
-
-		[ "$magic" != "ustar" ] && {
+		[ "$(identify_magic_long "$magic")" != "fit" ] && {
 			echo "Invalid image type."
 			return 1
 		}
