@@ -8,11 +8,9 @@ Subject: [PATCH]
  drivers/pwm/pwm-mediatek.c | 34 ++++++++++++++++++++++++++++++----
  1 file changed, 30 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/pwm/pwm-mediatek.c b/drivers/pwm/pwm-mediatek.c
-index 9701092e7..79d15a9c0 100644
 --- a/drivers/pwm/pwm-mediatek.c
 +++ b/drivers/pwm/pwm-mediatek.c
-@@ -152,8 +152,11 @@ static int pwm_mediatek_config(struct pwm_chip *chip, struct pwm_device *pwm,
+@@ -122,8 +122,11 @@ static int pwm_mediatek_config(struct pw
  			       int duty_ns, int period_ns)
  {
  	struct pwm_mediatek_chip *pc = to_pwm_mediatek_chip(chip);
@@ -25,8 +23,8 @@ index 9701092e7..79d15a9c0 100644
 +	    reg_width = PWMDWIDTH, reg_thres = PWMTHRES;
  	unsigned long clk_rate;
  	u64 resolution;
- 
-@@ -164,12 +167,30 @@ static int pwm_mediatek_config(struct pwm_chip *chip, struct pwm_device *pwm,
+ 	int ret;
+@@ -142,12 +145,30 @@ static int pwm_mediatek_config(struct pw
  
  	/* Using resolution in picosecond gets accuracy higher */
  	resolution = (u64)NSEC_PER_SEC * 1000;
@@ -58,7 +56,7 @@ index 9701092e7..79d15a9c0 100644
  		cnt_period = DIV_ROUND_CLOSEST_ULL((u64)period_ns * 1000,
  						   resolution);
  	}
-@@ -189,8 +210,13 @@ static int pwm_mediatek_config(struct pwm_chip *chip, struct pwm_device *pwm,
+@@ -167,8 +188,13 @@ static int pwm_mediatek_config(struct pw
  		reg_thres = PWM45THRES_FIXUP;
  	}
  
@@ -73,6 +71,3 @@ index 9701092e7..79d15a9c0 100644
  	pwm_mediatek_writel(pc, pwm->hwpwm, reg_width, cnt_period);
  	pwm_mediatek_writel(pc, pwm->hwpwm, reg_thres, cnt_duty);
  
--- 
-2.34.1
-

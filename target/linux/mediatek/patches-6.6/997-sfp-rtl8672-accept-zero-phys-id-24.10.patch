@@ -28,11 +28,9 @@ Signed-off-by: BananaPi-R4 community <openwrt@bananapi.org>
  drivers/net/phy/sfp.c | 7 +++++++
  1 file changed, 7 insertions(+)
 
-diff --git a/drivers/net/phy/sfp.c b/drivers/net/phy/sfp.c
-index 165c624..88f0bad 100644
 --- a/drivers/net/phy/sfp.c
 +++ b/drivers/net/phy/sfp.c
-@@ -314,6 +314,13 @@ static bool sfp_module_supported(const struct sfp_eeprom_id *id)
+@@ -315,6 +315,13 @@ static bool sfp_module_supported(const s
  	    id->base.phys_ext_id == SFP_PHYS_EXT_ID_SFP)
  		return true;
  
@@ -46,5 +44,3 @@ index 165c624..88f0bad 100644
  	/* SFP GPON module Ubiquiti U-Fiber Instant has in its EEPROM stored
  	 * phys id SFF instead of SFP. Therefore mark this module explicitly
  	 * as supported based on vendor name and pn match.
--- 
-2.45.2

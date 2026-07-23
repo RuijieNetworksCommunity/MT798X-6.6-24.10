@@ -30,11 +30,9 @@ Signed-off-by: BananaPi-R4 community <openwrt@bananapi.org>
  drivers/net/phy/sfp.c | 36 ++++++++++++++++++++++++++++++------
  1 file changed, 30 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/phy/sfp.c b/drivers/net/phy/sfp.c
-index 88f0bad..902a5f3 100644
 --- a/drivers/net/phy/sfp.c
 +++ b/drivers/net/phy/sfp.c
-@@ -2168,6 +2168,23 @@ static bool sfp_id_needs_byte_io(struct sfp *sfp, void *buf, size_t len)
+@@ -2136,6 +2136,23 @@ static bool sfp_id_needs_byte_io(struct
  	return true;
  }
  
@@ -58,7 +56,7 @@ index 88f0bad..902a5f3 100644
  static int sfp_cotsworks_fixup_check(struct sfp *sfp, struct sfp_eeprom_id *id)
  {
  	u8 check;
-@@ -2248,10 +2265,6 @@ static int sfp_sm_mod_probe(struct sfp *sfp, bool report)
+@@ -2216,10 +2233,6 @@ static int sfp_sm_mod_probe(struct sfp *
  	 * is really required and we have no other option.
  	 */
  	if (sfp_id_needs_byte_io(sfp, &id.base, sizeof(id.base))) {
@@ -69,7 +67,7 @@ index 88f0bad..902a5f3 100644
  		sfp->i2c_block_size = 1;
  
  		ret = sfp_read(sfp, false, 0, &id.base, sizeof(id.base));
-@@ -2268,6 +2281,19 @@ static int sfp_sm_mod_probe(struct sfp *sfp, bool report)
+@@ -2236,6 +2249,19 @@ static int sfp_sm_mod_probe(struct sfp *
  				ERR_PTR(ret));
  			return -EAGAIN;
  		}
@@ -89,5 +87,3 @@ index 88f0bad..902a5f3 100644
  	}
  
  	/* Cotsworks do not seem to update the checksums when they
--- 
-2.45.2

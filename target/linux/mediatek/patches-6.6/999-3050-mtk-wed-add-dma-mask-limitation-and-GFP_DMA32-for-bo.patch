@@ -8,11 +8,9 @@ Subject: [PATCH] mtk: wed: add dma mask limitation and GFP_DMA32 for board >=
  drivers/net/ethernet/mediatek/mtk_wed.c | 7 +++++--
  1 file changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/mediatek/mtk_wed.c b/drivers/net/ethernet/mediatek/mtk_wed.c
-index bcc4f9c..6956c5d 100644
 --- a/drivers/net/ethernet/mediatek/mtk_wed.c
 +++ b/drivers/net/ethernet/mediatek/mtk_wed.c
-@@ -670,7 +670,7 @@ mtk_wed_tx_buffer_alloc(struct mtk_wed_device *dev)
+@@ -670,7 +670,7 @@ mtk_wed_tx_buffer_alloc(struct mtk_wed_d
  		void *buf;
  		int s;
  
@@ -21,7 +19,7 @@ index bcc4f9c..6956c5d 100644
  		if (!page)
  			return -ENOMEM;
  
-@@ -793,7 +793,7 @@ mtk_wed_hwrro_buffer_alloc(struct mtk_wed_device *dev)
+@@ -793,7 +793,7 @@ mtk_wed_hwrro_buffer_alloc(struct mtk_we
  		struct page *page;
  		int s;
  
@@ -30,7 +28,7 @@ index bcc4f9c..6956c5d 100644
  		if (!page)
  			return -ENOMEM;
  
-@@ -2435,6 +2435,9 @@ mtk_wed_attach(struct mtk_wed_device *dev)
+@@ -2435,6 +2435,9 @@ mtk_wed_attach(struct mtk_wed_device *de
  	dev->wdma_idx = hw->index;
  	dev->version = hw->version;
  	dev->hw->pcie_base = mtk_wed_get_pcie_base(dev);
@@ -40,6 +38,3 @@ index bcc4f9c..6956c5d 100644
  
  	if (hw->eth->dma_dev == hw->eth->dev &&
  	    of_dma_is_coherent(hw->eth->dev->of_node))
--- 
-2.45.2
-

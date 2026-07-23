@@ -8,11 +8,9 @@ Subject: [PATCH 3/3] tty: serial: 8250: fix clock setting for mediatek serial
  drivers/tty/serial/8250/8250_mtk.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/tty/serial/8250/8250_mtk.c b/drivers/tty/serial/8250/8250_mtk.c
-index 28f9a267..c9296ff0 100644
 --- a/drivers/tty/serial/8250/8250_mtk.c
 +++ b/drivers/tty/serial/8250/8250_mtk.c
-@@ -475,13 +475,13 @@ static int mtk8250_probe_of(struct platform_device *pdev, struct uart_port *p,
+@@ -475,13 +475,13 @@ static int mtk8250_probe_of(struct platf
  	int dmacnt;
  #endif
  
@@ -28,6 +26,3 @@ index 28f9a267..c9296ff0 100644
  		if (IS_ERR(data->uart_clk)) {
  			dev_warn(&pdev->dev, "Can't get uart clock\n");
  			return PTR_ERR(data->uart_clk);
--- 
-2.45.2
-

@@ -1,16 +1,5 @@
-Index: linux-6.6.94/drivers/net/phy/sfp.c
-===================================================================
---- linux-6.6.94.orig/drivers/net/phy/sfp.c
-+++ linux-6.6.94/drivers/net/phy/sfp.c
-@@ -156,7 +156,7 @@ static const char *gpio_names[] = {
- };
- 
- static const enum gpiod_flags gpio_flags[] = {
--	GPIOD_IN | GPIOD_FLAGS_BIT_NONEXCLUSIVE,
-+	GPIOD_IN,
- 	GPIOD_IN,
- 	GPIOD_IN,
- 	GPIOD_ASIS,
+--- a/drivers/net/phy/sfp.c
++++ b/drivers/net/phy/sfp.c
 @@ -270,6 +270,7 @@ struct sfp {
  	unsigned int state_hw_drive;
  	unsigned int state_hw_mask;
@@ -145,14 +134,14 @@ Index: linux-6.6.94/drivers/net/phy/sfp.c
 +	// 1000BASE-LX / 1300MBd in its EEPROM
 +	SFP_QUIRK("Hisense", "ZNID-GPON-2311NA", sfp_quirk_2500basex,
 +		  sfp_fixup_ignore_tx_fault),
- 
--	// Lantech 8330-262D-E can operate at 2500base-X, but incorrectly report
--	// 2500MBd NRZ in their EEPROM
++
 +	// HSGQ HSGQ-XPON-Stick can operate at 2500base-X, but reports
 +	// 1000BASE-LX / 1300MBd in its EEPROM
 +	SFP_QUIRK("HSGQ", "HSGQ-XPON-Stick", sfp_quirk_2500basex,
 +		  sfp_fixup_ignore_tx_fault),
-+
+ 
+-	// Lantech 8330-262D-E can operate at 2500base-X, but incorrectly report
+-	// 2500MBd NRZ in their EEPROM
 +	// Lantech 8330-262D-E and 8330-265D can operate at 2500base-X, but
 +	// incorrectly report 2500MBd NRZ in their EEPROM.
 +	// Some 8330-265D modules have inverted LOS, while all of them report
@@ -180,15 +169,6 @@ Index: linux-6.6.94/drivers/net/phy/sfp.c
  	SFP_QUIRK_F("Turris", "RTSFP-10", sfp_fixup_rollball),
  	SFP_QUIRK_F("Turris", "RTSFP-10G", sfp_fixup_rollball),
  	SFP_QUIRK_F("JESS-LINK", "P60000BBC001-1", sfp_fixup_rollball),
-@@ -624,7 +696,7 @@ static unsigned int sfp_gpio_get_state(s
- 	unsigned int i, state, v;
- 
- 	for (i = state = 0; i < GPIO_MAX; i++) {
--		if ((gpio_flags[i] & GPIOD_IN) != GPIOD_IN || !sfp->gpio[i])
-+		if (gpio_flags[i] != GPIOD_IN || !sfp->gpio[i])
- 			continue;
- 
- 		v = gpiod_get_value_cansleep(sfp->gpio[i]);
 @@ -879,7 +951,8 @@ static void sfp_soft_start_poll(struct s
  
  	mutex_lock(&sfp->st_mutex);
@@ -199,15 +179,6 @@ Index: linux-6.6.94/drivers/net/phy/sfp.c
  
  	if (sfp->state_soft_mask & (SFP_F_LOS | SFP_F_TX_FAULT) &&
  	    !sfp->need_poll)
-@@ -1910,7 +1983,7 @@ static int sfp_sm_probe_phy(struct sfp *
- static void sfp_sm_link_up(struct sfp *sfp)
- {
- 	sfp_link_up(sfp->sfp_bus);
--	sfp_sm_next(sfp, SFP_S_LINK_UP, T_LINK_STABLE);
-+	sfp_sm_next(sfp, SFP_S_LINK_UP, 0);
- }
- 
- static void sfp_sm_link_down(struct sfp *sfp)
 @@ -2319,6 +2392,10 @@ static int sfp_sm_mod_probe(struct sfp *
  	 * is really required and we have no other option.
  	 */
@@ -248,15 +219,6 @@ Index: linux-6.6.94/drivers/net/phy/sfp.c
  		} else if (event == SFP_E_TIMEOUT || event == SFP_E_TX_CLEAR) {
  	init_done:
  			/* Create mdiobus and start trying for PHY */
-@@ -2775,7 +2854,7 @@ static void sfp_sm_main(struct sfp *sfp,
- 		 * clear.  Probe for the PHY and check the LOS state.
- 		 */
- 		ret = sfp_sm_probe_for_phy(sfp);
--		if (ret == -ENODEV || ret == -EINVAL) {
-+		if (ret == -ENODEV) {
- 			if (--sfp->sm_phy_retries) {
- 				sfp_sm_next(sfp, SFP_S_INIT_PHY,
- 					    sfp->phy_t_retry);
 @@ -3024,12 +3103,7 @@ static void sfp_check_state(struct sfp *
  	mutex_lock(&sfp->st_mutex);
  	state = sfp_get_state(sfp);
@@ -271,17 +233,3 @@ Index: linux-6.6.94/drivers/net/phy/sfp.c
  
  	for (i = 0; i < GPIO_MAX; i++)
  		if (changed & BIT(i))
-@@ -3240,7 +3314,7 @@ static int sfp_probe(struct platform_dev
- 	}
- 
- 	for (i = 0; i < GPIO_MAX; i++) {
--		if ((gpio_flags[i] & GPIOD_IN) != GPIOD_IN || !sfp->gpio[i])
-+		if (gpio_flags[i] != GPIOD_IN || !sfp->gpio[i])
- 			continue;
- 
- 		sfp->gpio_irq[i] = gpiod_to_irq(sfp->gpio[i]);
-@@ -3348,3 +3422,4 @@ module_exit(sfp_exit);
- MODULE_ALIAS("platform:sfp");
- MODULE_AUTHOR("Russell King");
- MODULE_LICENSE("GPL v2");
-+MODULE_DESCRIPTION("SFP cage support");
