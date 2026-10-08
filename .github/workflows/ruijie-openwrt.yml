@@ -127,25 +127,13 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Add SSH Private key RTL837X_DRIVER
-      uses: webfactory/ssh-agent@v0.10.0
-      with:
-        ssh-private-key: |
-          ${{ secrets.SSH_PRIVATE_KEY_RTL837X_DRIVER }}
-
     - name: Clone rtl837x-gsw-driver driver
       run: |
-        git clone git@github.com:RuijieNetworksCommunity/rtl837x-gsw-driver.git package/rtl837x-gsw-driver
-
-    - name: Add SSH Private key RTL8372N_DSA_DRIVER
-      uses: webfactory/ssh-agent@v0.10.0
-      with:
-        ssh-private-key: |
-          ${{ secrets.SSH_PRIVATE_KEY_RTL8372N_DSA_DRIVER }}
+        git clone https://github.com/RuijieNetworksCommunity/rtl837x-gsw-driver.git package/rtl837x-gsw-driver
 
     - name: Clone rtl837x-dsa-driver driver
       run: |
-        git clone git@github.com:RuijieNetworksCommunity/rtl837x-dsa-driver.git package/rtl837x-dsa-driver
+        git clone https://github.com/RuijieNetworksCommunity/rtl837x-dsa-driver.git package/rtl837x-dsa-driver
 
     - name: Clone rtl8261-phy-driver driver
       run: |
